@@ -105,7 +105,7 @@ public class MethodRunner extends ClassRunner {
 
             TestCompiler compiler = new TestCompiler(config, code);
             boolean compileResult = compiler.compileTest(testName,
-                    errorOutputPath.resolve(testName + "_CompilationError_" + rounds + ".txt"), promptInfo);
+                    errorOutputPath.resolve(testName + "_CompilationError_" + rounds + ".txt"), promptInfo,fullClassName);
             if (!compileResult) {
                 LoggerUtil.info(config.project,"Test for method < " + methodInfo.methodName + " > compilation failed");
                 continue;

@@ -1,7 +1,8 @@
-package zju.cst.aces.chatunitest_plugin_idea;
+package zju.cst.aces.actions;
 
 import zju.cst.aces.Windows.WindowConfig;
 import zju.cst.aces.Windows.WindowDefaultConfig;
+import zju.cst.aces.utils.ConnectUtil;
 import zju.cst.aces.utils.JudgeUtil;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -45,12 +46,21 @@ public class ChatUniTestPluginAction extends AnAction {
             return;
         }
         init(project,basePath,mavenProject);
-        VirtualFile virtualFile = event.getData(PlatformDataKeys.VIRTUAL_FILE);
+        if(!ConnectUtil.TestOpenApiConnection(config.getRandomKey(),WindowConfig.hostname,WindowConfig.port)){
+            Messages.showMessageDialog("Please set apikey first", "Error", Messages.getErrorIcon());
+        }
+
+        /*VirtualFile virtualFile = event.getData(PlatformDataKeys.VIRTUAL_FILE);
         Application application = ApplicationManager.getApplication();
+        config.application=application;
         //parse the project
         ProjectParser parser = new ProjectParser(config);
-        LoggerUtil.info(project, "[ChatTester] Parsing class info");
-        /*CompletableFuture<Void> classRunnerTask = CompletableFuture.runAsync(() -> {
+        application.invokeLater(()->{
+            LoggerUtil.info(project, "[ChatTester] Parsing class info");
+            parser.parse();
+            LoggerUtil.info(project, "[ChatTester] Project parse finished");
+        });
+        *//*CompletableFuture<Void> classRunnerTask = CompletableFuture.runAsync(() -> {
             parser.parse();
         });
         try {
@@ -59,9 +69,9 @@ public class ChatUniTestPluginAction extends AnAction {
         } catch (InterruptedException | ExecutionException e) {
             LoggerUtil.info(project, "[ChatTester] Project parse failed");
             throw new RuntimeException(e);
-        }*/
+        }*//*
         if (basePath.equals(virtualFile.getPath())) {
-            ProjectTestGeneration.generate_project_test(config,application);
+            ProjectTestGeneration.generate_project_test(config);
             return;
         } else if (virtualFile.getFileType() == FileTypeManager.getInstance().getFileTypeByExtension("java") && !isMouseOnMethod(event)) {
             PsiJavaFile psiJavaFile = (PsiJavaFile) event.getData(CommonDataKeys.PSI_FILE);
@@ -74,7 +84,7 @@ public class ChatUniTestPluginAction extends AnAction {
             String methodName=JudgeUtil.getMethodName(event);
             MethodTestGeneration.generate_method_test(config,fullClassName,methodName);
             return;
-        }
+        }*/
     }
 
     /*插件初始化时，设置插件按钮的可见性*/

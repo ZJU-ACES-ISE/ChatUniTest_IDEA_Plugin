@@ -1,5 +1,17 @@
 package zju.cst.aces.util;
 
+import com.intellij.compiler.CompilerManagerImpl;
+import com.intellij.compiler.CompilerMessageImpl;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.application.Application;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.compiler.*;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.ProjectBuildingRequest;
@@ -16,6 +28,8 @@ import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 import org.junit.platform.launcher.core.LauncherFactory;
 import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
 import org.junit.platform.launcher.listeners.TestExecutionSummary;
+import zju.cst.aces.actions.CompileResult;
+import zju.cst.aces.actions.Usecase;
 import zju.cst.aces.config.Config;
 import zju.cst.aces.dto.PromptInfo;
 import zju.cst.aces.dto.TestMessage;
@@ -30,8 +44,12 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.CharBuffer;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 
@@ -40,11 +58,14 @@ public class TestCompiler {
     public static File backupFolder = new File("src" + File.separator + "backup");
     public static Config config;
     public String code;
+    public static Boolean result = null;
+    public static VirtualFile tempJavaFile;
 
     public TestCompiler(Config config) {
         this.config = config;
         this.code = "";
     }
+
     public TestCompiler(Config config, String code) {
         this.config = config;
         this.code = code;
@@ -92,7 +113,7 @@ public class TestCompiler {
                     for (StackTraceElement st : failure.getException().getStackTrace()) {
                         if (st.getClassName().equals(fullTestName)) {
                             errors.add(failure.getTestIdentifier().getDisplayName() + ": "
-                                    + " line: "  + st.getLineNumber() + " "
+                                    + " line: " + st.getLineNumber() + " "
                                     + failure.getException().toString());
                         }
                     }
@@ -113,7 +134,7 @@ public class TestCompiler {
     /**
      * Compile test file
      */
-    public boolean compileTest(String className, Path outputPath, PromptInfo promptInfo) {
+    public boolean compileTest1(String className, Path outputPath, PromptInfo promptInfo) {
         if (this.code == "") {
             throw new RuntimeException("In TestCompiler.compileTest: code is empty");
         }
@@ -123,10 +144,13 @@ public class TestCompiler {
                 outputPath.toAbsolutePath().getParent().toFile().mkdirs();
             }
             JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+            if (compiler == null) {
+                Messages.showMessageDialog("compiler is null", "error", Messages.getErrorIcon());
+            }
             StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
 
             SimpleJavaFileObject sourceJavaFileObject = new SimpleJavaFileObject(URI.create(className + ".java"),
-                    JavaFileObject.Kind.SOURCE){
+                    JavaFileObject.Kind.SOURCE) {
                 public CharBuffer getCharContent(boolean b) {
                     return CharBuffer.wrap(code);
                 }
@@ -150,13 +174,108 @@ public class TestCompiler {
                 testMessage.setErrorType(TestMessage.ErrorType.COMPILE_ERROR);
                 testMessage.setErrorMessage(errors);
                 promptInfo.setErrorMsg(testMessage);
-
                 exportError(errors.toString(), outputPath);
             }
         } catch (Exception e) {
             throw new RuntimeException("In TestCompiler.compileTest: " + e);
         }
         return result;
+    }
+
+    public boolean compileTest(String className, Path outputPath, PromptInfo promptInfo, String fullClassName) {
+        try {
+            return getResult(className, outputPath, promptInfo, fullClassName);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean compileTest_using_CompilerManager(String className, Path outputPath, PromptInfo promptInfo) {
+        return false;
+    }
+
+    public boolean getResult(String className, Path outputPath, PromptInfo promptInfo, String fullClassName) throws ExecutionException, InterruptedException {
+        List<String> errorList = new ArrayList<>();
+        Project project = config.getProject();
+        VirtualFile tempDir = project.getBaseDir().findFileByRelativePath("/src/main/java");
+        CompletableFuture<Boolean> compileFuture = new CompletableFuture<>();
+        // Create a temporary Java file
+        ApplicationManager.getApplication().invokeLater(() -> {
+            ApplicationManager.getApplication().runWriteAction(() -> {
+                try {
+                    tempJavaFile = tempDir.createChildData(null, className + ".java");
+                    tempJavaFile.setBinaryContent(code.getBytes());
+                    if (!outputPath.toAbsolutePath().getParent().toFile().exists()) {
+                        outputPath.toAbsolutePath().getParent().toFile().mkdirs();
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
+            CompilerManager compilerManager = CompilerManager.getInstance(project);
+            VirtualFile[] filesToCompile = new VirtualFile[]{tempJavaFile};
+            // 创建CompletableFuture对象来处理编译结果的回调
+            compilerManager.compile(filesToCompile, new CompileStatusNotification() {
+                @Override
+                public void finished(boolean aborted, int errors, int warnings, CompileContext compileContext) {
+                    if (errors > 0) {
+                        result = false;
+                        // If there are errors, collect the error messages
+                        CompilerMessage[] errorMessages = compileContext.getMessages(CompilerMessageCategory.ERROR);
+                        for (CompilerMessage errorMessage : errorMessages) {
+                            int lineNumber = ((CompilerMessageImpl) errorMessage).getLine();
+                            errorList.add("Error on Line " + lineNumber + " : " + errorMessage.getMessage());
+                            System.out.println(errorMessage.getMessage());
+                            TestMessage testMessage = new TestMessage();
+                            testMessage.setErrorType(TestMessage.ErrorType.COMPILE_ERROR);
+                            testMessage.setErrorMessage(errorList);
+                            promptInfo.setErrorMsg(testMessage);
+                            exportError(errorList.toString(), outputPath);
+                            ApplicationManager.getApplication().runWriteAction(() -> {
+                                try {
+                                    tempJavaFile.delete(this);
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            });
+                        }
+                        compileFuture.complete(false);
+                    } else {
+                        result = true;
+                        System.out.println("successful");
+                        ApplicationManager.getApplication().runWriteAction(() -> {
+                            try {
+                                tempJavaFile.delete(this);
+                                //todo 改成virtual file形式
+                                VirtualFile fileToMove = project.getBaseDir().findFileByRelativePath("/target/classes/" + fullClassName.replace(".", "/") + ".class");
+                                if (fileToMove != null) {
+                                    try {
+                                        // Copy the file to the destination folder
+                                        Path sourcePath = Paths.get(fileToMove.getPath());
+//                                      Path destinationPath = Paths.get(destinationFolder.getPath(), fileToMove.getName());
+                                        Path destinationPath = outputPath.toAbsolutePath().getParent();
+                                        Files.copy(sourcePath, destinationPath);
+                                        // Refresh the destination folder to see the changes
+                                        // Delete the original file
+                                        fileToMove.delete(this);
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+                        compileFuture.complete(true);
+                    }
+                    // 设置CompletableFuture的结果，以便通知编译完成
+                }
+            });
+        });
+        return compileFuture.get();
     }
 
     public void exportError(String error, Path outputPath) {
@@ -170,7 +289,7 @@ public class TestCompiler {
         }
     }
 
-    public static List<String> listClassPaths(MavenProject mavenProject){
+    public static List<String> listClassPaths(MavenProject mavenProject) {
         List<String> classPaths = new ArrayList<>();
         for (MavenArtifact dependency : mavenProject.getDependencies()) {
             classPaths.add(dependency.getPath());
@@ -213,4 +332,6 @@ public class TestCompiler {
             }
         }
     }
+
+
 }

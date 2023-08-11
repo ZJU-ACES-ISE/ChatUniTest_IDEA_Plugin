@@ -1,5 +1,6 @@
 package zju.cst.aces.config;
 
+import com.intellij.openapi.application.Application;
 import com.intellij.openapi.project.Project;
 import lombok.Getter;
 import lombok.Setter;
@@ -57,6 +58,7 @@ public class Config {
     public String basePath;
     public Project project;
     public MavenProject mavenProject;
+    public static Application application;
 
     public static class ConfigBuilder {
         public DependencyGraphBuilder dependencyGraphBuilder;

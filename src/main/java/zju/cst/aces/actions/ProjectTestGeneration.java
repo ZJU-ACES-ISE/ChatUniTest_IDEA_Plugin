@@ -1,7 +1,8 @@
-package zju.cst.aces.chatunitest_plugin_idea;
+package zju.cst.aces.actions;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.intellij.openapi.application.ApplicationManager;
 import zju.cst.aces.utils.FileUtil;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.project.Project;
@@ -24,50 +25,52 @@ import java.util.concurrent.*;
 public class ProjectTestGeneration {
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
 
-    public static void generate_project_test(Config config, Application application) {
-        Project project = config.project;
-        String basePath = config.basePath;
-        CompletableFuture<Void> classTask=CompletableFuture.runAsync(()-> {
+    public static void generate_project_test(Config config) {
+        ApplicationManager.getApplication().executeOnPooledThread(()->{
+            Project project = config.project;
+            String basePath = config.basePath;
+            CompletableFuture<Void> classTask=CompletableFuture.runAsync(()-> {
 
-            ProjectParser parser = new ProjectParser(config);
-            parser.parse();
-            LoggerUtil.info(project, "[ChatTester] Parse finished");
-            LoggerUtil.info(project, "[ChatTester] Generating tests for project: " + project.getName());
-            LoggerUtil.warn(project, "[ChatTester] It may consume a significant number of tokens!");
+                ProjectParser parser = new ProjectParser(config);
+                parser.parse();
+                LoggerUtil.info(project, "[ChatTester] Project parse finished");
+                LoggerUtil.info(project, "[ChatTester] Generating tests for project: " + project.getName());
+                LoggerUtil.warn(project, "[ChatTester] It may consume a significant number of tokens!");
 
-            Path srcMainJavaPath = Paths.get(basePath, "src", "main", "java");
-            if (!srcMainJavaPath.toFile().exists()) {
-                LoggerUtil.error(project, "[ChatTester] No compile source found in " + project);
-                return;
-            }
+                Path srcMainJavaPath = Paths.get(basePath, "src", "main", "java");
+                if (!srcMainJavaPath.toFile().exists()) {
+                    LoggerUtil.error(project, "[ChatTester] No compile source found in " + project);
+                    return;
+                }
 
 
-            List<String> classPaths = new ArrayList<>();
-            parser.scanSourceDirectory(srcMainJavaPath.toFile(), classPaths);
-            if (config.isEnableMultithreading() == true) {
-                classJob(classPaths, config);
-            } else {
-
-                for (String classPath : classPaths) {
-                    String className = classPath.substring(classPath.lastIndexOf(File.separator) + 1, classPath.lastIndexOf("."));
-                    try {
-                        className = getFullClassName(className, config);
-                        String finalClassName = className;
-                        application.invokeLater(() -> {
-                            LoggerUtil.info(project, "[ChatTester] Generating tests for class < " + finalClassName + " > ...");
-                        });
-                        new ClassRunner(className, config).start();
-                    } catch (IOException e) {
-                        String finalClassName1 = className;
-                        application.invokeLater(() -> {
-                            LoggerUtil.error(project, "[ChatTester] Generate tests for class " + finalClassName1 + " failed: " + e);
-                        });
+                List<String> classPaths = new ArrayList<>();
+                parser.scanSourceDirectory(srcMainJavaPath.toFile(), classPaths);
+                if (config.isEnableMultithreading() == true) {
+                    classJob(classPaths, config);
+                } else {
+                    for (String classPath : classPaths) {
+                        String className = classPath.substring(classPath.lastIndexOf(File.separator) + 1, classPath.lastIndexOf("."));
+                        try {
+                            className = getFullClassName(className, config);
+                            String finalClassName = className;
+                            ApplicationManager.getApplication().invokeLater(() -> {
+                                LoggerUtil.info(project, "[ChatTester] Generating tests for class: " + finalClassName);
+                            });
+                            new ClassRunner(className, config).start();
+                        } catch (IOException e) {
+                            String finalClassName1 = className;
+                            ApplicationManager.getApplication().invokeLater(() -> {
+                                LoggerUtil.error(project, "[ChatTester] Generate tests for class " + finalClassName1 + " failed: " + e);
+                            });
+                        }
                     }
                 }
-            }
-            LoggerUtil.info(project, "[ChatTester] Generation finished");
-            FileUtil.refreshFolder(config.testOutput);
+                LoggerUtil.info(project, "[ChatTester] Generation finished");
+                FileUtil.refreshFolder(config.testOutput);
+            });
         });
+
     }
 
     public static void classJob(List<String> classPaths, Config config) {
