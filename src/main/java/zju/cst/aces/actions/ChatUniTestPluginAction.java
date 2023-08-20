@@ -49,42 +49,6 @@ public class ChatUniTestPluginAction extends AnAction {
         if(!ConnectUtil.TestOpenApiConnection(config.getRandomKey(),WindowConfig.hostname,WindowConfig.port)){
             Messages.showMessageDialog("Please set apikey first", "Error", Messages.getErrorIcon());
         }
-
-        /*VirtualFile virtualFile = event.getData(PlatformDataKeys.VIRTUAL_FILE);
-        Application application = ApplicationManager.getApplication();
-        config.application=application;
-        //parse the project
-        ProjectParser parser = new ProjectParser(config);
-        application.invokeLater(()->{
-            LoggerUtil.info(project, "[ChatTester] Parsing class info");
-            parser.parse();
-            LoggerUtil.info(project, "[ChatTester] Project parse finished");
-        });
-        *//*CompletableFuture<Void> classRunnerTask = CompletableFuture.runAsync(() -> {
-            parser.parse();
-        });
-        try {
-            classRunnerTask.get();
-            LoggerUtil.info(project, "[ChatTester] Project parse finished");
-        } catch (InterruptedException | ExecutionException e) {
-            LoggerUtil.info(project, "[ChatTester] Project parse failed");
-            throw new RuntimeException(e);
-        }*//*
-        if (basePath.equals(virtualFile.getPath())) {
-            ProjectTestGeneration.generate_project_test(config);
-            return;
-        } else if (virtualFile.getFileType() == FileTypeManager.getInstance().getFileTypeByExtension("java") && !isMouseOnMethod(event)) {
-            PsiJavaFile psiJavaFile = (PsiJavaFile) event.getData(CommonDataKeys.PSI_FILE);
-            String fullClassName = String.format("%s.%s", psiJavaFile.getPackageName(), virtualFile.getNameWithoutExtension());
-            ClassTestGeneration.generate_class_test(config,fullClassName);
-            return;
-        } else if (isMouseOnMethod(event)) {
-            PsiJavaFile psiJavaFile = (PsiJavaFile) event.getData(CommonDataKeys.PSI_FILE);
-            String fullClassName = String.format("%s.%s", psiJavaFile.getPackageName(), virtualFile.getNameWithoutExtension());
-            String methodName=JudgeUtil.getMethodName(event);
-            MethodTestGeneration.generate_method_test(config,fullClassName,methodName);
-            return;
-        }*/
     }
 
     /*插件初始化时，设置插件按钮的可见性*/
