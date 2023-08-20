@@ -28,6 +28,8 @@ import zju.cst.aces.parser.ProjectParser;
 import zju.cst.aces.utils.LoggerUtil;
 
 import java.nio.file.Paths;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 public class ChatUniTestPluginAction extends AnAction {
     Config config;
@@ -50,7 +52,7 @@ public class ChatUniTestPluginAction extends AnAction {
             Messages.showMessageDialog("Please set apikey first", "Error", Messages.getErrorIcon());
         }
 
-        /*VirtualFile virtualFile = event.getData(PlatformDataKeys.VIRTUAL_FILE);
+        VirtualFile virtualFile = event.getData(PlatformDataKeys.VIRTUAL_FILE);
         Application application = ApplicationManager.getApplication();
         config.application=application;
         //parse the project
@@ -60,7 +62,7 @@ public class ChatUniTestPluginAction extends AnAction {
             parser.parse();
             LoggerUtil.info(project, "[ChatTester] Project parse finished");
         });
-        *//*CompletableFuture<Void> classRunnerTask = CompletableFuture.runAsync(() -> {
+        CompletableFuture<Void> classRunnerTask = CompletableFuture.runAsync(() -> {
             parser.parse();
         });
         try {
@@ -69,7 +71,7 @@ public class ChatUniTestPluginAction extends AnAction {
         } catch (InterruptedException | ExecutionException e) {
             LoggerUtil.info(project, "[ChatTester] Project parse failed");
             throw new RuntimeException(e);
-        }*//*
+        }
         if (basePath.equals(virtualFile.getPath())) {
             ProjectTestGeneration.generate_project_test(config);
             return;
@@ -84,7 +86,7 @@ public class ChatUniTestPluginAction extends AnAction {
             String methodName=JudgeUtil.getMethodName(event);
             MethodTestGeneration.generate_method_test(config,fullClassName,methodName);
             return;
-        }*/
+        }
     }
 
     /*插件初始化时，设置插件按钮的可见性*/

@@ -36,43 +36,6 @@
         </toolWindow>
     </extensions>
     <actions>
-        <!--<action id="method_action_id" class="com.hhh.plugin.chatunitest_plugin_idea.MethodAction" text="method_action"
-                description="为所选方法生成测试">
-            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
-        </action>
-        <action id="first_test_action_id" class="com.hhh.plugin.chatunitest_plugin_idea.FirstAction" text="first_test_action"
-                description="测试一下基本功能">
-            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
-        </action>-->
-        <!--<action id="ProjectPluginAction_id" class="com.hhh.plugin.chatunitest_plugin_idea.ProjectPluginAction"
-                text="testForProject" description="aaaaaaaaaa">
-        <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
-        </action>
-
-        <action id="Method_plugin_action_id" class="com.hhh.plugin.chatunitest_plugin_idea.MethodPluginAction"
-                text="MethodTest" description="methodtest">
-        <add-to-group group-id="EditorPopupMenu" anchor="first"/>
-        </action>
-        <action id="Class_plugin_action_id" class="com.hhh.plugin.chatunitest_plugin_idea.ClassPluginAction"
-                text="ClassTest" description="classtest">
-            <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
-            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
-        </action>-->
-        <!--<action id="test_plugin_id" class="zju.cst.aces.actions.TestPluginAction" text="测试一下"
-                description="测试一下">
-            <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
-            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
-        </action>
-        <action id="test_plugin_id_javacompiler" class="zju.cst.aces.actions.TestJavaCompilerAction" text="测试获取JavaCompiler对象"
-                description="测试获取JavaCompiler对象">
-            <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
-            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
-        </action>
-        <action id="test_plugin_id_javacompiler1" class="zju.cst.aces.actions.CodeCompilerAction" text="直接测试一下8.8"
-                description="直接测试一下">
-            <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
-            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
-        </action>-->
         <action id="ChatUniTestPlugin_id" class="zju.cst.aces.actions.ChatUniTestPluginAction" text="ChatUniTest generate tests"
                 description="Generate unit test cases for project,java class or method" icon="/icons/pluginIcon.svg">
             <!-- 将动作添加到 EditorPopupMenu 和 ProjectViewPopupMenu 这两个 group 中 -->
