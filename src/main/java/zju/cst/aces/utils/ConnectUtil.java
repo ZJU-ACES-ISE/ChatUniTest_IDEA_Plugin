@@ -41,7 +41,7 @@ public class ConnectUtil {
                     return true;
                 }
             } catch (IOException e) {
-
+                e.printStackTrace();
             } finally {
                 try {
                     // 关闭 HttpClient
