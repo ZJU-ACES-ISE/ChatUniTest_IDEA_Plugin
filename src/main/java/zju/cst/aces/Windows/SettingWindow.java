@@ -108,10 +108,6 @@ public class SettingWindow extends JPanel {
         maxThreads.setText(String.valueOf(WindowDefaultConfig.maxThreads));
         testOutput.setText(WindowDefaultConfig.testOutput);
         maxPromptTokens.setText(String.valueOf(WindowDefaultConfig.maxPromptTokens));
-        /*先设置好*/
-        /*apikey.setText("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");
-        hostname.setText("127.0.0.1");
-        port.setText("10809");*/
     }
 
     private void setDefaultConfig(ActionEvent event) {
