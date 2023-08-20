@@ -1,22 +1,11 @@
 package zju.cst.aces.util;
-
-import com.intellij.compiler.CompilerManagerImpl;
 import com.intellij.compiler.CompilerMessageImpl;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.compiler.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.VirtualFileManager;
-import org.apache.maven.execution.MavenSession;
-import org.apache.maven.project.DefaultProjectBuildingRequest;
-import org.apache.maven.project.ProjectBuildingRequest;
-import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
-import org.apache.maven.shared.dependency.graph.DependencyNode;
+
 import org.codehaus.plexus.util.FileUtils;
 import org.jetbrains.idea.maven.model.MavenArtifact;
 import org.jetbrains.idea.maven.project.MavenProject;
@@ -28,12 +17,10 @@ import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 import org.junit.platform.launcher.core.LauncherFactory;
 import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
 import org.junit.platform.launcher.listeners.TestExecutionSummary;
-import zju.cst.aces.actions.CompileResult;
-import zju.cst.aces.actions.Usecase;
+
 import zju.cst.aces.config.Config;
 import zju.cst.aces.dto.PromptInfo;
 import zju.cst.aces.dto.TestMessage;
-import zju.cst.aces.parser.ProjectParser;
 
 import javax.tools.*;
 import java.io.BufferedWriter;

@@ -1,11 +1,13 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
     <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
-    <id>com.hhh.plugin.chatunitest_plugin_idea</id>
+<!--    <id>com.hhh.plugin.chatunitest_plugin_idea</id>-->
+    <id>zju.cst.aces.chatunitest_plugin</id>
 
     <!-- Public plugin name should be written in Title Case.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
-    <name>Chatunitest_plugin_idea</name>
+<!--    <name>Chatunitest_plugin_idea</name>-->
+    <name>Chatunitest</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
     <vendor email="huhuanghuang2001@gmail.com" url="https://github.com/NCCurry30">Huhuanghuang</vendor>
