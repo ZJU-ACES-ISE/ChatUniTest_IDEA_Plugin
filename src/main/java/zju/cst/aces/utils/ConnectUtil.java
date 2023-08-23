@@ -53,10 +53,4 @@ public class ConnectUtil {
         return true;
     }
 
-    public static void main(String[] args) {
-        String[] apikeys=new String[]{"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","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"};
-//        String[] apikeys=new String[]{"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"};
-        boolean b = testOpenApiConnection(apikeys, "127.0.0.1", "10809");
-        System.out.println(b);
-    }
 }

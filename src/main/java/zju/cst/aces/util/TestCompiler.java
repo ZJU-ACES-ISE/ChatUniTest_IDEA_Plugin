@@ -196,13 +196,12 @@ public class TestCompiler {
                                 throw new RuntimeException(e);
                             }
                         });
+                        // 设置CompletableFuture的结果，以便通知编译完成
                         compileFuture.complete(true);
                     }
-                    // 设置CompletableFuture的结果，以便通知编译完成
                 }
             });
         }, ModalityState.defaultModalityState());
-
         return compileFuture.get();
     }
 
