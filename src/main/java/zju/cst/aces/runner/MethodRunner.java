@@ -1,5 +1,8 @@
 package zju.cst.aces.runner;
 
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
 import okhttp3.Response;
 import zju.cst.aces.config.Config;
 import zju.cst.aces.dto.Message;
@@ -10,7 +13,9 @@ import zju.cst.aces.utils.LoggerUtil;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
@@ -76,14 +81,14 @@ public class MethodRunner extends ClassRunner {
                 + methodInfo.methodName + " > number " + num + "...\n");
         for (int rounds = 1; rounds <= config.getMaxRounds(); rounds++) {
             if (promptInfo == null) {
-                LoggerUtil.info(config.project,"Generating test for method < " + methodInfo.methodName + " > round " + rounds + " ...");
+                LoggerUtil.info(config.project,"Generating test for method  " + methodInfo.methodName + "  round " + rounds + " ...");
                 if (methodInfo.dependentMethods.size() > 0) {
                     promptInfo = generatePromptInfoWithDep(classInfo, methodInfo);
                 } else {
                     promptInfo = generatePromptInfoWithoutDep(classInfo, methodInfo);
                 }
             } else {
-                LoggerUtil.info(config.project,("Fixing test for method < " + methodInfo.methodName + " > round " + rounds + " ..."));
+                LoggerUtil.info(config.project,("Fixing test for method  " + methodInfo.methodName + "  round " + rounds + " ..."));
             }
             List<Message> prompt = generateMessages(promptInfo);
 //            config.getLog().debug("[Prompt]:\n" + prompt.toString());
@@ -94,7 +99,7 @@ public class MethodRunner extends ClassRunner {
 
             String code = parseResponse(response);
             if (code.isEmpty()) {
-                LoggerUtil.error(config.project,"Test for method < " + methodInfo.methodName + " > extract code failed");
+                LoggerUtil.error(config.project,"Test for method  " + methodInfo.methodName + "  extract code failed");
                 continue;
             }
             code = changeTestName(code, className, testName);
@@ -107,20 +112,21 @@ public class MethodRunner extends ClassRunner {
             boolean compileResult = compiler.compileTest(testName,
                     errorOutputPath.resolve(testName + "_CompilationError_" + rounds + ".txt"), promptInfo,fullClassName);
             if (!compileResult) {
-                LoggerUtil.info(config.project,"Test for method < " + methodInfo.methodName + " > compilation failed");
+                LoggerUtil.info(config.project,"Test for method  " + methodInfo.methodName + "  compilation failed");
                 continue;
             }
             if (config.isNoExecution()) {
                 exportTest(code, savePath);
-                LoggerUtil.info(config.project,"Test for method < " + methodInfo.methodName + " > generated successfully");
+                LoggerUtil.info(config.project,"Test for method  " + methodInfo.methodName + " generated successfully");
                 return true;
             }
+
             if (compiler.executeTest(fullTestName, errorOutputPath.resolve(testName + "_ExecutionError_" + rounds + ".txt"), promptInfo)) {
                 exportTest(code, savePath);
-                LoggerUtil.info(config.project,"Test for method < " + methodInfo.methodName + " > generated successfully");
+                LoggerUtil.info(config.project,"Test for method  " + methodInfo.methodName + "  generated successfully");
                 return true;
             } else {
-                LoggerUtil.info(config.project,"Test for method < " + methodInfo.methodName + " > execution failed");
+                LoggerUtil.info(config.project,"Test for method  " + methodInfo.methodName + "  execution failed");
             }
         }
         return false;

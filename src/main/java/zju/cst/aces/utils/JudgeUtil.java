@@ -3,9 +3,11 @@ package zju.cst.aces.utils;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -62,12 +64,14 @@ public class JudgeUtil {
     }
 
     public static String getMethodName(AnActionEvent event){
-        Editor editor = event.getData(CommonDataKeys.EDITOR);
-        PsiFile psiFile = event.getData(CommonDataKeys.PSI_FILE);
-        int offset = editor.getCaretModel().getOffset();
-        PsiElement element = psiFile.findElementAt(offset);
-        PsiMethod method = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
-        String methodName = method.getName();
-        return methodName;
+        return ApplicationManager.getApplication().runReadAction((Computable<String>) ()->{
+            Editor editor = event.getData(CommonDataKeys.EDITOR);
+            PsiFile psiFile = event.getData(CommonDataKeys.PSI_FILE);
+            int offset = editor.getCaretModel().getOffset();
+            PsiElement element = psiFile.findElementAt(offset);
+            PsiMethod method = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
+            String methodName = method.getName();
+            return methodName;
+        });
     }
 }

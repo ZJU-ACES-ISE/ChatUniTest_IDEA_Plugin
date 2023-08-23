@@ -1,7 +1,18 @@
 package zju.cst.aces.actions;
 
+import com.intellij.compiler.CompilerConfiguration;
+import com.intellij.compiler.impl.ModuleCompileScope;
+import com.intellij.openapi.compiler.CompileContext;
+import com.intellij.openapi.compiler.CompileStatusNotification;
+import com.intellij.openapi.compiler.CompilerManager;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleUtilCore;
+import com.intellij.openapi.util.Computable;
+import org.jetbrains.annotations.NotNull;
+import zju.cst.aces.Windows.CompilerDialog;
 import zju.cst.aces.Windows.WindowConfig;
 import zju.cst.aces.Windows.WindowDefaultConfig;
+import zju.cst.aces.config.ConfigPersistence;
 import zju.cst.aces.utils.ConnectUtil;
 import zju.cst.aces.utils.JudgeUtil;
 import com.intellij.openapi.actionSystem.AnAction;
@@ -36,57 +47,123 @@ public class ChatUniTestPluginAction extends AnAction {
 
     @Override
     public void actionPerformed(AnActionEvent event) {
-        Project project = event.getProject();
-        String basePath = project.getBasePath();
-        MavenProject mavenProject = MavenActionUtil.getMavenProject(event.getDataContext());
-        if (JudgeUtil.isMavenProject(project)) {
-            Messages.showMessageDialog("Please use maven-archetype project", "Error", Messages.getErrorIcon());
-            return;
-        }
-        if (WindowConfig.apiKeys == null) {
-            Messages.showMessageDialog("Please set apikey first", "Error", Messages.getErrorIcon());
-            return;
-        }
-        init(project,basePath,mavenProject);
-        if(!ConnectUtil.TestOpenApiConnection(config.getRandomKey(),WindowConfig.hostname,WindowConfig.port)){
-            Messages.showMessageDialog("Please set apikey first", "Error", Messages.getErrorIcon());
-        }
-
-        VirtualFile virtualFile = event.getData(PlatformDataKeys.VIRTUAL_FILE);
         Application application = ApplicationManager.getApplication();
         config.application=application;
-        //parse the project
-        ProjectParser parser = new ProjectParser(config);
-        application.invokeLater(()->{
-            LoggerUtil.info(project, "[ChatTester] Parsing class info");
-            parser.parse();
-            LoggerUtil.info(project, "[ChatTester] Project parse finished");
+        application.executeOnPooledThread(()->{
+            Project project = event.getProject();
+            String basePath = project.getBasePath();
+            MavenProject mavenProject = MavenActionUtil.getMavenProject(event.getDataContext());
+            if (JudgeUtil.isMavenProject(project)) {
+                application.invokeLater(()->{
+                    Messages.showMessageDialog("Please use maven-archetype project", "Error", Messages.getErrorIcon());
+                });
+                return;
+            }
+            loadPersistentConfig();
+            if (WindowConfig.apiKeys == null) {
+                application.invokeLater(()->{
+                    Messages.showMessageDialog("Please set apikey first", "Error", Messages.getErrorIcon());
+                });
+                return;
+            }
+            init(project,basePath,mavenProject);
+            if(!ConnectUtil.testOpenApiConnection(WindowConfig.apiKeys,WindowConfig.hostname,WindowConfig.port)){
+                application.invokeLater(()->{
+                    Messages.showMessageDialog("Connect to openai failed", "Error", Messages.getErrorIcon());
+                });
+                return;
+            }
+
+            VirtualFile virtualFile = event.getData(PlatformDataKeys.VIRTUAL_FILE);
+
+            //parse the project
+            ProjectParser parser = new ProjectParser(config);
+            application.invokeLater(()->{
+                LoggerUtil.info(project, "[ChatTester] Parsing class info");
+            });
+            CompilerManager compilerManager = CompilerManager.getInstance(project);
+            VirtualFile currentFile = event.getDataContext().getData(CommonDataKeys.VIRTUAL_FILE);
+            Module module = ModuleUtilCore.findModuleForFile(currentFile, project);
+            CompletableFuture<Integer> compileDialogResult = new CompletableFuture<>();
+            application.invokeLater(()->{
+                int result = Messages.showDialog(
+                        project,
+                        "Insure the project has been compiled",
+                        "Compile Confirm",
+                        new String[]{"Skip", "Compile"},
+                        0, // Default option (0: "Skip", 1: "Compile")
+                        Messages.getWarningIcon()
+                );
+                compileDialogResult.complete(result);
+            });
+            try {
+                if(compileDialogResult.get()==1){
+                    CompletableFuture<Boolean> compileFuture=new CompletableFuture<>();
+                    application.invokeLater(()->{
+                        compilerManager.compile(module, new CompileStatusNotification() {
+                            @Override
+                            public void finished(boolean aborted, int errors, int warnings, @NotNull CompileContext compileContext) {
+                                if(errors>0){
+                                    application.invokeLater(()->{
+                                        Messages.showMessageDialog("Compile project failed", "Error", Messages.getErrorIcon());
+                                    });
+                                    compileFuture.complete(false);
+                                }
+                                else {
+                                    compileFuture.complete(true);
+                                }
+                            }
+                        });
+                    });
+                    try {
+                        if(!compileFuture.get()){
+                            return;
+                        }
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    } catch (ExecutionException e) {
+                        throw new RuntimeException(e);
+                    }
+                    CompletableFuture<Void> classRunnerTask = CompletableFuture.runAsync(() -> {
+                        parser.parse();
+                    });
+                    try {
+                        classRunnerTask.get();
+                        application.invokeLater(()->{
+                            LoggerUtil.info(project, "[ChatTester] Project parse finished");
+                        });
+                    } catch (InterruptedException | ExecutionException e) {
+                        application.invokeLater(()->{
+                            LoggerUtil.info(project, "[ChatTester] Project parse failed");
+                        });
+                        throw new RuntimeException(e);
+                    }
+                }
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            } catch (ExecutionException e) {
+                throw new RuntimeException(e);
+            }
+
+            if (basePath.equals(virtualFile.getPath())) {
+                ProjectTestGeneration.generate_project_test(config);
+                return;
+            } else if (virtualFile.getFileType() == FileTypeManager.getInstance().getFileTypeByExtension("java") && !isMouseOnMethod(event)) {
+                PsiJavaFile psiJavaFile = (PsiJavaFile) event.getData(CommonDataKeys.PSI_FILE);
+                String fullClassName = String.format("%s.%s", psiJavaFile.getPackageName(), virtualFile.getNameWithoutExtension());
+                ClassTestGeneration.generate_class_test(config,fullClassName);
+                return;
+            } else if (isMouseOnMethod(event)) {
+                String fullClassName=application.runReadAction((Computable<String>) ()->{
+                    PsiJavaFile psiJavaFile = (PsiJavaFile) event.getData(CommonDataKeys.PSI_FILE);
+                    String fcName= String.format("%s.%s", psiJavaFile.getPackageName(), virtualFile.getNameWithoutExtension());
+                    return fcName;
+                });
+                String methodName=JudgeUtil.getMethodName(event);
+                MethodTestGeneration.generate_method_test(config,fullClassName,methodName);
+                return;
+            }
         });
-        CompletableFuture<Void> classRunnerTask = CompletableFuture.runAsync(() -> {
-            parser.parse();
-        });
-        try {
-            classRunnerTask.get();
-            LoggerUtil.info(project, "[ChatTester] Project parse finished");
-        } catch (InterruptedException | ExecutionException e) {
-            LoggerUtil.info(project, "[ChatTester] Project parse failed");
-            throw new RuntimeException(e);
-        }
-        if (basePath.equals(virtualFile.getPath())) {
-            ProjectTestGeneration.generate_project_test(config);
-            return;
-        } else if (virtualFile.getFileType() == FileTypeManager.getInstance().getFileTypeByExtension("java") && !isMouseOnMethod(event)) {
-            PsiJavaFile psiJavaFile = (PsiJavaFile) event.getData(CommonDataKeys.PSI_FILE);
-            String fullClassName = String.format("%s.%s", psiJavaFile.getPackageName(), virtualFile.getNameWithoutExtension());
-            ClassTestGeneration.generate_class_test(config,fullClassName);
-            return;
-        } else if (isMouseOnMethod(event)) {
-            PsiJavaFile psiJavaFile = (PsiJavaFile) event.getData(CommonDataKeys.PSI_FILE);
-            String fullClassName = String.format("%s.%s", psiJavaFile.getPackageName(), virtualFile.getNameWithoutExtension());
-            String methodName=JudgeUtil.getMethodName(event);
-            MethodTestGeneration.generate_method_test(config,fullClassName,methodName);
-            return;
-        }
     }
 
     /*插件初始化时，设置插件按钮的可见性*/
@@ -126,18 +203,20 @@ public class ChatUniTestPluginAction extends AnAction {
     }
 
     private boolean isMouseOnMethod(AnActionEvent event) {
-        Editor editor = event.getData(CommonDataKeys.EDITOR);
-        if (editor == null) {
+        return ApplicationManager.getApplication().runReadAction((Computable<Boolean>) ()->{
+            Editor editor = event.getData(CommonDataKeys.EDITOR);
+            if (editor == null) {
+                return false;
+            }
+            PsiFile psiFile = event.getData(CommonDataKeys.PSI_FILE);
+            int offset = editor.getCaretModel().getOffset();
+            PsiElement element = psiFile.findElementAt(offset);
+            PsiMethod method = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
+            if (method != null) {
+                return true;
+            }
             return false;
-        }
-        PsiFile psiFile = event.getData(CommonDataKeys.PSI_FILE);
-        int offset = editor.getCaretModel().getOffset();
-        PsiElement element = psiFile.findElementAt(offset);
-        PsiMethod method = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
-        if (method != null) {
-            return true;
-        }
-        return false;
+        });
     }
 
     public void init(Project project, String basePath,MavenProject mavenProject) {
@@ -164,5 +243,46 @@ public class ChatUniTestPluginAction extends AnAction {
                 .proxy((WindowConfig.hostname.equals("") || WindowConfig.port.equals("")) ? "null:-1" : String.format("%s:%s", WindowConfig.hostname, WindowConfig.port))
                 .others()
                 .build();
+    }
+
+    public void loadPersistentConfig(){
+        ConfigPersistence configPersistence = ApplicationManager.getApplication().getComponent(ConfigPersistence.class);
+        ConfigPersistence.IdeaConfiguration ideaConfiguration=configPersistence.getState();
+        String[] apiKeys_per = ideaConfiguration.apiKeys;
+        String hostname_per = ideaConfiguration.hostname;
+        String port_per = ideaConfiguration.port;
+        Integer testNumber_per = ideaConfiguration.testNumber;
+        Integer maxRounds_per = ideaConfiguration.maxRounds;
+        Integer minErrorTokens_per = ideaConfiguration.minErrorTokens;
+        Integer model_index_per = ideaConfiguration.model_index;
+        Integer topP_per = ideaConfiguration.topP;
+        Double temperature_per = ideaConfiguration.temperature;
+        Integer frequencyPenalty_per = ideaConfiguration.frequencyPenalty;
+        Integer presencePenalty_per = ideaConfiguration.presencePenalty;
+        String tmpOutput_per = ideaConfiguration.tmpOutput;
+        Boolean stopWhenSuccess_per = ideaConfiguration.stopWhenSuccess;
+        Boolean enableMultithreading_per = ideaConfiguration.enableMultithreading;
+        Boolean noExecution_per = ideaConfiguration.noExecution;
+        Integer maxThreads_per = ideaConfiguration.maxThreads;
+        String testOutput_per = ideaConfiguration.testOutput;
+        Integer maxPromptTokens_per = ideaConfiguration.maxPromptTokens;
+        WindowConfig.apiKeys = apiKeys_per;
+        WindowConfig.hostname = hostname_per!=null?hostname_per:"";
+        WindowConfig.port = port_per!=null?port_per:"";
+        WindowConfig.testNumber = testNumber_per;
+        WindowConfig.maxRounds = maxRounds_per;
+        WindowConfig.minErrorTokens = minErrorTokens_per;
+        WindowConfig.topP = topP_per;
+        WindowConfig.temperature = temperature_per;
+        WindowConfig.frequencyPenalty = frequencyPenalty_per;
+        WindowConfig.presencePenalty = presencePenalty_per;
+        WindowConfig.tmpOutput = tmpOutput_per;
+        WindowConfig.testOutput = testOutput_per;
+        WindowConfig.maxPromptTokens = maxPromptTokens_per;
+        WindowConfig.model_index = model_index_per;
+        WindowConfig.maxThreads = maxThreads_per;
+        WindowConfig.stopWhenSuccess = stopWhenSuccess_per;
+        WindowConfig.enableMultithreading = enableMultithreading_per;
+        WindowConfig.noExecution = noExecution_per;
     }
 }

@@ -21,7 +21,6 @@ public class MethodTestGeneration {
             ApplicationManager.getApplication().invokeLater(()->{
                 LoggerUtil.info(project, "[ChatTester] Generating tests for project: " + project.getName());
             });
-            //todo：消息弹出顺序不对
             //todo:用户得可以中断生成，要不然一直跑
             try {
                 ApplicationManager.getApplication().invokeLater(()->{
@@ -62,7 +61,6 @@ public class MethodTestGeneration {
         parser.parse();
         LoggerUtil.info(project, "[ChatTester] Parse finished");
         LoggerUtil.info(project, "[ChatTester] Generating tests for project: " + project.getName());
-        //todo：消息弹出顺序不对
         //todo:用户得可以中断生成，要不然一直跑
         try {
             LoggerUtil.info(project, "[ChatTester] Generating tests for class:  " + fullClassName

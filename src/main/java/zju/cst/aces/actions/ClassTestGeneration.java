@@ -15,8 +15,6 @@ import java.util.concurrent.CompletableFuture;
 public class ClassTestGeneration {
 
     public static void generate_class_test(Config config, String fullClassName) {
-        //todo:parser移到最外面一层
-        //todo:是否需要自动编译一遍项目
         ApplicationManager.getApplication().executeOnPooledThread(()->{
             Project project = config.project;
             ProjectParser parser = new ProjectParser(config);

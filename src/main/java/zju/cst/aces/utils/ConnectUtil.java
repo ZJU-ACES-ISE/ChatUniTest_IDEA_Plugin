@@ -1,7 +1,5 @@
 package zju.cst.aces.utils;
 
-import com.intellij.openapi.application.Application;
-import com.intellij.openapi.application.ApplicationManager;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
@@ -15,19 +13,20 @@ import java.io.IOException;
 
 public class ConnectUtil {
     /*测试与openapi的连接是否成功*/
-    public static boolean TestOpenApiConnection(String apikey, String proxyHost, String proxyPort) {
-            CloseableHttpClient httpClient;
-            if (!(proxyHost.equals("") || proxyPort.equals(""))) {
-                // 设置代理
-                HttpHost proxy = new HttpHost(proxyHost, Integer.parseInt(proxyPort));
-                httpClient = HttpClients.custom()
-                        .setProxy(proxy)
-                        .build();
-            } else {
-                httpClient = HttpClients.custom()
-                        .build();
-            }
-            try {
+    public static boolean testOpenApiConnection(String[] apikeys, String proxyHost, String proxyPort) {
+        CloseableHttpClient httpClient;
+        if (!(proxyHost.equals("") || proxyPort.equals(""))) {
+            // 设置代理
+            HttpHost proxy = new HttpHost(proxyHost, Integer.parseInt(proxyPort));
+            httpClient = HttpClients.custom()
+                    .setProxy(proxy)
+                    .build();
+        } else {
+            httpClient = HttpClients.custom()
+                    .build();
+        }
+        try {
+            for (String apikey : apikeys) {
                 // 构造 API 请求
                 HttpGet httpGet = new HttpGet("https://api.openai.com/v1/engines");
                 // 设置 API 密钥
@@ -37,19 +36,27 @@ public class ConnectUtil {
                 // 处理响应
                 int statusCode = response.getStatusLine().getStatusCode();
                 String responseContent = EntityUtils.toString(response.getEntity());
-                if (statusCode == 200) {
-                    return true;
-                }
-            } catch (IOException e) {
-
-            } finally {
-                try {
-                    // 关闭 HttpClient
-                    httpClient.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                if (statusCode != 200) {
+                    return false;
                 }
             }
-            return false;
+        } catch (IOException e) {
+
+        } finally {
+            try {
+                // 关闭 HttpClient
+                httpClient.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return true;
+    }
+
+    public static void main(String[] args) {
+        String[] apikeys=new String[]{"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","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"};
+//        String[] apikeys=new String[]{"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"};
+        boolean b = testOpenApiConnection(apikeys, "127.0.0.1", "10809");
+        System.out.println(b);
     }
 }

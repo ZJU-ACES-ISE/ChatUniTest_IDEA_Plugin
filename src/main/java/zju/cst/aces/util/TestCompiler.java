@@ -1,9 +1,13 @@
 package zju.cst.aces.util;
+
 import com.intellij.compiler.CompilerMessageImpl;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.application.TransactionGuard;
 import com.intellij.openapi.compiler.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 
 import org.codehaus.plexus.util.FileUtils;
@@ -34,6 +38,7 @@ import java.nio.CharBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -121,54 +126,6 @@ public class TestCompiler {
     /**
      * Compile test file
      */
-    public boolean compileTest1(String className, Path outputPath, PromptInfo promptInfo) {
-        if (this.code == "") {
-            throw new RuntimeException("In TestCompiler.compileTest: code is empty");
-        }
-        boolean result;
-        try {
-            if (!outputPath.toAbsolutePath().getParent().toFile().exists()) {
-                outputPath.toAbsolutePath().getParent().toFile().mkdirs();
-            }
-            JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-            if (compiler == null) {
-                Messages.showMessageDialog("compiler is null", "error", Messages.getErrorIcon());
-            }
-            StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
-
-            SimpleJavaFileObject sourceJavaFileObject = new SimpleJavaFileObject(URI.create(className + ".java"),
-                    JavaFileObject.Kind.SOURCE) {
-                public CharBuffer getCharContent(boolean b) {
-                    return CharBuffer.wrap(code);
-                }
-            };
-
-            Iterable<? extends JavaFileObject> compilationUnits = Arrays.asList(sourceJavaFileObject);
-            Iterable<String> options = Arrays.asList("-classpath", String.join(";", config.getClassPaths()),
-                    "-d", outputPath.toAbsolutePath().getParent().toString());
-
-            DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
-            JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, diagnostics, options, null, compilationUnits);
-
-            result = task.call();
-            if (!result) {
-                TestMessage testMessage = new TestMessage();
-                List<String> errors = new ArrayList<>();
-                diagnostics.getDiagnostics().forEach(diagnostic -> {
-                    errors.add("Error on line " + diagnostic.getLineNumber() +
-                            " : " + diagnostic.getMessage(null));
-                });
-                testMessage.setErrorType(TestMessage.ErrorType.COMPILE_ERROR);
-                testMessage.setErrorMessage(errors);
-                promptInfo.setErrorMsg(testMessage);
-                exportError(errors.toString(), outputPath);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("In TestCompiler.compileTest: " + e);
-        }
-        return result;
-    }
-
     public boolean compileTest(String className, Path outputPath, PromptInfo promptInfo, String fullClassName) {
         try {
             return getResult(className, outputPath, promptInfo, fullClassName);
@@ -221,37 +178,20 @@ public class TestCompiler {
                             testMessage.setErrorMessage(errorList);
                             promptInfo.setErrorMsg(testMessage);
                             exportError(errorList.toString(), outputPath);
-                            ApplicationManager.getApplication().runWriteAction(() -> {
-                                try {
-                                    tempJavaFile.delete(this);
-                                } catch (IOException e) {
-                                    throw new RuntimeException(e);
-                                }
-                            });
                         }
-                        compileFuture.complete(false);
-                    } else {
-                        result = true;
-                        System.out.println("successful");
                         ApplicationManager.getApplication().runWriteAction(() -> {
                             try {
                                 tempJavaFile.delete(this);
-                                //todo 改成virtual file形式
-                                VirtualFile fileToMove = project.getBaseDir().findFileByRelativePath("/target/classes/" + fullClassName.replace(".", "/") + ".class");
-                                if (fileToMove != null) {
-                                    try {
-                                        // Copy the file to the destination folder
-                                        Path sourcePath = Paths.get(fileToMove.getPath());
-//                                      Path destinationPath = Paths.get(destinationFolder.getPath(), fileToMove.getName());
-                                        Path destinationPath = outputPath.toAbsolutePath().getParent();
-                                        Files.copy(sourcePath, destinationPath);
-                                        // Refresh the destination folder to see the changes
-                                        // Delete the original file
-                                        fileToMove.delete(this);
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                    }
-                                }
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+                        compileFuture.complete(false);
+                    } else {
+                        result = true;
+                        ApplicationManager.getApplication().runWriteAction(() -> {
+                            try {
+                                tempJavaFile.delete(this);
                             } catch (IOException e) {
                                 throw new RuntimeException(e);
                             }
@@ -261,7 +201,8 @@ public class TestCompiler {
                     // 设置CompletableFuture的结果，以便通知编译完成
                 }
             });
-        });
+        }, ModalityState.defaultModalityState());
+
         return compileFuture.get();
     }
 

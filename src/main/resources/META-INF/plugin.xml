@@ -35,9 +35,14 @@
                     icon="/icons/pluginIcon.svg">
         </toolWindow>
     </extensions>
+    <application-components>
+        <component>
+            <implementation-class>zju.cst.aces.config.ConfigPersistence</implementation-class>
+        </component>
+    </application-components>
     <actions>
         <action id="ChatUniTestPlugin_id" class="zju.cst.aces.actions.ChatUniTestPluginAction" text="ChatUniTest generate tests"
-                description="Generate unit test cases for project,java class or method" icon="/icons/pluginIcon.svg">
+                description="Generate unit test cases for project,java class or method" icon="/icons/pluginIcon.svg" >
             <!-- 将动作添加到 EditorPopupMenu 和 ProjectViewPopupMenu 这两个 group 中 -->
             <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>

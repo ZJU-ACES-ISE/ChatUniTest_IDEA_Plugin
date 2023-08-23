@@ -4,6 +4,7 @@
 
 package zju.cst.aces.Windows;
 
+import zju.cst.aces.config.ConfigPersistence;
 import zju.cst.aces.utils.ConnectUtil;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
@@ -21,7 +22,49 @@ import java.awt.event.ActionEvent;
 public class SettingWindow extends JPanel {
     public SettingWindow(Project project, ToolWindow toolWindow) {
         initComponents();
-        initDefaultConfig();
+//        initDefaultConfig();
+        //载入持久化配置信息
+//        ConfigPersistence configPersistence= ServiceManager.getService(ConfigPersistence.class);
+        ConfigPersistence configPersistence = ApplicationManager.getApplication().getComponent(ConfigPersistence.class);
+        ConfigPersistence.IdeaConfiguration ideaConfiguration=configPersistence.getState();
+        String[] apiKeys_per = ideaConfiguration.apiKeys;
+        System.out.println("apiKeys = " + apiKeys_per);
+        String hostname_per = ideaConfiguration.hostname;
+        String port_per = ideaConfiguration.port;
+        Integer testNumber_per = ideaConfiguration.testNumber;
+        Integer maxRounds_per = ideaConfiguration.maxRounds;
+        Integer minErrorTokens_per = ideaConfiguration.minErrorTokens;
+        Integer model_index_per = ideaConfiguration.model_index;
+        Integer topP_per = ideaConfiguration.topP;
+        Double temperature_per = ideaConfiguration.temperature;
+        Integer frequencyPenalty_per = ideaConfiguration.frequencyPenalty;
+        Integer presencePenalty_per = ideaConfiguration.presencePenalty;
+        String tmpOutput_per = ideaConfiguration.tmpOutput;
+        Boolean stopWhenSuccess_per = ideaConfiguration.stopWhenSuccess;
+        Boolean enableMultithreading_per = ideaConfiguration.enableMultithreading;
+        Boolean noExecution_per = ideaConfiguration.noExecution;
+        Integer maxThreads_per = ideaConfiguration.maxThreads;
+        String testOutput_per = ideaConfiguration.testOutput;
+        Integer maxPromptTokens_per = ideaConfiguration.maxPromptTokens;
+        apikey.setText(apiKeys_per!=null?String.join(",",apiKeys_per):"");
+        hostname.setText(hostname_per!=null?hostname_per:"");
+        port.setText(port_per!=null?port_per:"");
+        testNumber.setText(testNumber_per!=null? String.valueOf(testNumber_per) : String.valueOf(WindowDefaultConfig.testNumber));
+        maxRounds.setText(maxRounds_per!=null? String.valueOf(maxRounds_per) : String.valueOf(WindowDefaultConfig.maxRounds));
+        minErrorTokens.setText(minErrorTokens_per!=null? String.valueOf(minErrorTokens_per) : String.valueOf(WindowDefaultConfig.minErrorTokens));
+        model.setSelectedIndex(model_index_per!=null?model_index_per:WindowDefaultConfig.model_index);
+        topP.setText(topP_per!=null? String.valueOf(topP_per) : String.valueOf(WindowDefaultConfig.topP));
+        temperature.setText(temperature_per!=null? String.valueOf(temperature_per) : String.valueOf(WindowDefaultConfig.temperature));
+        frequencyPenalty.setText(frequencyPenalty_per!=null? String.valueOf(frequencyPenalty_per) : String.valueOf(WindowDefaultConfig.frequencyPenalty));
+        presencePenalty.setText(presencePenalty_per!=null? String.valueOf(presencePenalty_per) : String.valueOf(WindowDefaultConfig.presencePenalty));
+        tmpOutput.setText(tmpOutput_per!=null?tmpOutput_per:WindowDefaultConfig.tmpOutput);
+        stopWhenSuccess.setSelected(stopWhenSuccess_per!=null?stopWhenSuccess_per:WindowDefaultConfig.stopWhenSuccess);
+        enableMultithreading.setSelected(enableMultithreading_per!=null?enableMultithreading_per:WindowDefaultConfig.enableMultithreading);
+        noExecution.setSelected(noExecution_per!=null?noExecution_per:WindowDefaultConfig.noExecution);
+        maxThreads.setText(maxThreads_per!=null? String.valueOf(maxThreads_per) : String.valueOf(WindowDefaultConfig.maxThreads));
+        testOutput.setText(testOutput_per!=null?testOutput_per:WindowDefaultConfig.testOutput);
+        maxPromptTokens.setText(maxPromptTokens_per!=null? String.valueOf(maxPromptTokens_per) : String.valueOf(WindowDefaultConfig.maxPromptTokens));
+        confirm(null);
     }
 
     public void fillPanelInfoByConfig() {
@@ -71,6 +114,30 @@ public class SettingWindow extends JPanel {
     }
 
     private void confirm(ActionEvent event) {
+
+        ConfigPersistence configPersistence = ApplicationManager.getApplication().getComponent(ConfigPersistence.class);
+        ConfigPersistence.IdeaConfiguration ideaConfiguration=configPersistence.getState();
+
+        ideaConfiguration.apiKeys = apikey.getText().split(",");
+        ideaConfiguration.hostname = hostname.getText();
+        ideaConfiguration.port = (port.getText().equals("") ? null : (port.getText()));
+        ideaConfiguration.testNumber = (testNumber.getText().equals("") ? WindowDefaultConfig.testNumber : Integer.parseInt(testNumber.getText()));
+        ideaConfiguration.maxRounds = (maxRounds.getText().equals("") ? WindowDefaultConfig.maxRounds : Integer.parseInt(maxRounds.getText()));
+        ideaConfiguration.minErrorTokens = (minErrorTokens.getText().equals("") ? WindowDefaultConfig.minErrorTokens : Integer.parseInt(minErrorTokens.getText()));
+        ideaConfiguration.topP = (topP.getText().equals("") ? WindowDefaultConfig.topP : Integer.parseInt(topP.getText()));
+        ideaConfiguration.temperature = (temperature.getText().equals("") ? WindowDefaultConfig.temperature : Double.parseDouble(temperature.getText()));
+        ideaConfiguration.frequencyPenalty = (frequencyPenalty.getText().equals("") ? WindowDefaultConfig.frequencyPenalty : Integer.parseInt(frequencyPenalty.getText()));
+        ideaConfiguration.presencePenalty = (presencePenalty.getText().equals("") ? WindowDefaultConfig.presencePenalty : Integer.parseInt(presencePenalty.getText()));
+        ideaConfiguration.tmpOutput = (tmpOutput.getText().equals("") ? WindowDefaultConfig.tmpOutput : tmpOutput.getText());
+        ideaConfiguration.testOutput = (testOutput.getText().equals("") ? WindowDefaultConfig.testOutput : testOutput.getText());
+        ideaConfiguration.maxPromptTokens = (maxPromptTokens.getText().equals("") ? WindowDefaultConfig.maxPromptTokens : Integer.parseInt(maxPromptTokens.getText()));
+        ideaConfiguration.model_index = model.getSelectedIndex();
+        ideaConfiguration.maxThreads = (maxThreads.getText().equals("") ? WindowDefaultConfig.maxThreads : Integer.parseInt(maxThreads.getText()));
+        ideaConfiguration.stopWhenSuccess = stopWhenSuccess.isSelected();
+        ideaConfiguration.enableMultithreading = enableMultithreading.isSelected();
+        ideaConfiguration.noExecution = noExecution.isSelected();
+        configPersistence.loadState(ideaConfiguration);//更新持久化
+
         WindowConfig.apiKeys = apikey.getText().split(",");
         WindowConfig.hostname = hostname.getText();
         WindowConfig.port = (port.getText().equals("") ? null : (port.getText()));
@@ -118,7 +185,7 @@ public class SettingWindow extends JPanel {
     private void testConnection(ActionEvent e) {
         Application application = ApplicationManager.getApplication();
         application.executeOnPooledThread(() -> {
-            boolean isConnected = ConnectUtil.TestOpenApiConnection(apikey.getText(), hostname.getText(), port.getText());
+            boolean isConnected = ConnectUtil.testOpenApiConnection(apikey.getText().split(","), hostname.getText(), port.getText());
             SwingUtilities.invokeLater(()->{
                 testStatus.setText("");
                 if (isConnected) {
