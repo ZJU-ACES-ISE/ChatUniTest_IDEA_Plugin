@@ -179,23 +179,27 @@ public class TestCompiler {
                             promptInfo.setErrorMsg(testMessage);
                             exportError(errorList.toString(), outputPath);
                         }
-                        ApplicationManager.getApplication().runWriteAction(() -> {
-                            try {
-                                tempJavaFile.delete(this);
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
+                        ApplicationManager.getApplication().invokeLater(()->{
+                            ApplicationManager.getApplication().runWriteAction(() -> {
+                                try {
+                                    tempJavaFile.delete(this);
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            });
                         });
                         compileFuture.complete(false);
                     } else {
                         result = true;
-                        ApplicationManager.getApplication().runWriteAction(() -> {
-                            try {
-                                tempJavaFile.delete(this);
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        });
+                        ApplicationManager.getApplication().invokeLater(()->{
+                            ApplicationManager.getApplication().runWriteAction(() -> {
+                                try {
+                                    tempJavaFile.delete(this);
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            });
+                        },ModalityState.defaultModalityState());
                         // 设置CompletableFuture的结果，以便通知编译完成
                         compileFuture.complete(true);
                     }
@@ -225,7 +229,6 @@ public class TestCompiler {
         classPaths.add(outputDirectory);
         return classPaths;
     }
-
 
     /**
      * Move the src/test/java folder to a backup folder
@@ -259,6 +262,4 @@ public class TestCompiler {
             }
         }
     }
-
-
 }
