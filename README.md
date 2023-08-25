@@ -20,7 +20,17 @@ You can configure the default `Generation Configuration` for unit test generatio
 in the toolwindow of the plugin: `configSettingWindow`.
 
 ### Unit test generation
-ChatUniTest can generate unit tests in a variety of ways, depending on your needs:generate unit tests for your **Maven project**, **Java class**, and **Java method**.
+#### 1. Add the following dependency to `pom.xml` in your target project. 
+```xml
+<dependency>
+    <groupId>io.github.ZJU-ACES-ISE</groupId>
+    <artifactId>chatunitest-starter</artifactId>
+    <version>1.0.0</version>
+    <type>pom</type>
+</dependency>
+```
+
+#### 2.ChatUniTest can generate unit tests in a variety of ways, depending on your needs:generate unit tests for your **Maven project**, **Java class**, and **Java method**.
 1. You can place your mouse over the project root directory and click the right mouse button ,click `ChatUniTest generate tests`. The plugin will generate unit tests for your **entire project**
 2. You can place your mouse over the `.java` file in `/src/main/java` directory and click the right mouse button ,click `ChatUniTest generate tests`. The plugin will generate unit tests for your **selected Java class**
 3. You can place your mouse over the `method` in your `Java class` and click the right mouse button ,click `ChatUniTest generate tests`. The plugin will generate unit tests for your **selected Java method**
