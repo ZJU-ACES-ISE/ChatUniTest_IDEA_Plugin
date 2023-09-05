@@ -69,17 +69,16 @@ public class ChatUniTestPluginAction extends AnAction {
             init(project,basePath,mavenProject);
             if(!ConnectUtil.testOpenApiConnection(WindowConfig.apiKeys,WindowConfig.hostname,WindowConfig.port)){
                 application.invokeLater(()->{
-                    Messages.showMessageDialog("Connect to openai failed", "Error", Messages.getErrorIcon());
+                    Messages.showMessageDialog("Connect to OpenAI failed", "Error", Messages.getErrorIcon());
                 });
                 return;
             }
-
             VirtualFile virtualFile = event.getData(PlatformDataKeys.VIRTUAL_FILE);
 
             //parse the project
             ProjectParser parser = new ProjectParser(config);
             application.invokeLater(()->{
-                LoggerUtil.info(project, "[ChatTester] Parsing class info");
+                LoggerUtil.info(project, "[ChatUniTest] Parsing class info");
             });
             CompilerManager compilerManager = CompilerManager.getInstance(project);
             VirtualFile currentFile = event.getDataContext().getData(CommonDataKeys.VIRTUAL_FILE);
@@ -130,11 +129,11 @@ public class ChatUniTestPluginAction extends AnAction {
                     try {
                         classRunnerTask.get();
                         application.invokeLater(()->{
-                            LoggerUtil.info(project, "[ChatTester] Project parse finished");
+                            LoggerUtil.info(project, "[ChatUniTest] Project parse finished");
                         });
                     } catch (InterruptedException | ExecutionException e) {
                         application.invokeLater(()->{
-                            LoggerUtil.info(project, "[ChatTester] Project parse failed");
+                            LoggerUtil.info(project, "[ChatUniTest] Project parse failed");
                         });
                         throw new RuntimeException(e);
                     }

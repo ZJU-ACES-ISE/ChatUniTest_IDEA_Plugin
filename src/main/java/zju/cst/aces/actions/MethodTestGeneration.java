@@ -19,12 +19,12 @@ public class MethodTestGeneration {
         ApplicationManager.getApplication().executeOnPooledThread(()->{
             Project project = config.project;
             ApplicationManager.getApplication().invokeLater(()->{
-                LoggerUtil.info(project, "[ChatTester] Generating tests for project: " + project.getName());
+                LoggerUtil.info(project, "[ChatUniTest] Generating tests for project: " + project.getName());
             });
             //todo:用户得可以中断生成，要不然一直跑
             try {
                 ApplicationManager.getApplication().invokeLater(()->{
-                    LoggerUtil.info(project, "[ChatTester] Generating tests for class:  " + fullClassName
+                    LoggerUtil.info(project, "[ChatUniTest] Generating tests for class:  " + fullClassName
                             + ", method: " + methodName);
                 });
                 ClassRunner classRunner = new ClassRunner(fullClassName, config);
@@ -49,7 +49,7 @@ public class MethodTestGeneration {
                 throw new RuntimeException("In MethodTestMojo.execute: " + e);
             }
             ApplicationManager.getApplication().invokeLater(()->{
-                LoggerUtil.info(project, "[ChatTester] Generation finished");
+                LoggerUtil.info(project, "[ChatUniTest] Generation finished");
             });
             FileUtil.refreshFolder(config.testOutput);
         });

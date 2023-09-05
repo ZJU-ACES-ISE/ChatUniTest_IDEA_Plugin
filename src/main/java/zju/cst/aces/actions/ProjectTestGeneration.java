@@ -33,13 +33,13 @@ public class ProjectTestGeneration {
 
                 ProjectParser parser = new ProjectParser(config);
                 parser.parse();
-                LoggerUtil.info(project, "[ChatTester] Project parse finished");
-                LoggerUtil.info(project, "[ChatTester] Generating tests for project: " + project.getName());
-                LoggerUtil.warn(project, "[ChatTester] It may consume a significant number of tokens!");
+                LoggerUtil.info(project, "[ChatUniTest] Project parse finished");
+                LoggerUtil.info(project, "[ChatUniTest] Generating tests for project: " + project.getName());
+//                LoggerUtil.warn(project, "[ChatUniTest] It may consume a significant number of tokens!");
 
                 Path srcMainJavaPath = Paths.get(basePath, "src", "main", "java");
                 if (!srcMainJavaPath.toFile().exists()) {
-                    LoggerUtil.error(project, "[ChatTester] No compile source found in " + project);
+                    LoggerUtil.error(project, "[ChatUniTest] No compile source found in " + project);
                     return;
                 }
 
@@ -55,18 +55,18 @@ public class ProjectTestGeneration {
                             className = getFullClassName(className, config);
                             String finalClassName = className;
                             ApplicationManager.getApplication().invokeLater(() -> {
-                                LoggerUtil.info(project, "[ChatTester] Generating tests for class: " + finalClassName);
+                                LoggerUtil.info(project, "[ChatUniTest] Generating tests for class: " + finalClassName);
                             });
                             new ClassRunner(className, config).start();
                         } catch (IOException e) {
                             String finalClassName1 = className;
                             ApplicationManager.getApplication().invokeLater(() -> {
-                                LoggerUtil.error(project, "[ChatTester] Generate tests for class " + finalClassName1 + " failed: " + e);
+                                LoggerUtil.error(project, "[ChatUniTest] Generate tests for class " + finalClassName1 + " failed: " + e);
                             });
                         }
                     }
                 }
-                LoggerUtil.info(project, "[ChatTester] Generation finished");
+                LoggerUtil.info(project, "[ChatUniTest] Generation finished");
                 FileUtil.refreshFolder(config.testOutput);
             });
         });

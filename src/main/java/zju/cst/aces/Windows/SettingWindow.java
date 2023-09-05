@@ -246,69 +246,69 @@ public class SettingWindow extends JPanel {
 
         //======== this ========
         setLayout(new MigLayout(
-                "hidemode 3",
-                // columns
-                "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]",
-                // rows
-                "[]" +
-                        "[]" +
-                        "[]" +
-                        "[]" +
-                        "[]" +
-                        "[]" +
-                        "[]" +
-                        "[]" +
-                        "[]" +
-                        "[]" +
-                        "[]" +
-                        "[]" +
-                        "[]" +
-                        "[]"));
+            "hidemode 3",
+            // columns
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]" +
+            "[fill]",
+            // rows
+            "[]" +
+            "[]" +
+            "[]" +
+            "[]" +
+            "[]" +
+            "[]" +
+            "[]" +
+            "[]" +
+            "[]" +
+            "[]" +
+            "[]" +
+            "[]" +
+            "[]" +
+            "[]"));
 
         //---- textfield ----
         textfield.setText("Apikey");
@@ -363,9 +363,9 @@ public class SettingWindow extends JPanel {
         add(label11, "cell 10 4");
 
         //---- model ----
-        model.setModel(new DefaultComboBoxModel<>(new String[]{
-                "gpt-3.5-turbo",
-                "gpt-4"
+        model.setModel(new DefaultComboBoxModel<>(new String[] {
+            "gpt-3.5-turbo",
+            "gpt-4"
         }));
         add(model, "cell 13 4 8 1");
 
@@ -473,7 +473,6 @@ public class SettingWindow extends JPanel {
     private JTextField testOutput;
     private JButton confirmButton;
     private JButton button1;
-
     // JFormDesigner - End of variables declaration  //GEN-END:variables  @formatter:on
     public static void main(String[] args) {
     }

@@ -16,8 +16,20 @@
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description><![CDATA[
-    Chatunitest_plugin_idea<br>
-    <em>Many people have tried using ChatGPT to help them with various programming tasks and have achieved good results. However, there are some issues with using ChatGPT directly. Firstly, the generated code often fails to execute correctly, leading to the famous saying "five minutes to code, two hours to debug". Secondly, it is inconvenient to integrate with existing projects as it requires manual interaction with ChatGPT and switching between different platforms. To address these problems, we have proposed the "Generate-Validate-Repair" framework and implemented a prototype. Additionally, to make it easier for everyone to use, we have developed some plugins that can be seamlessly integrated into existing development workflows.</em>
+    <p>Many people have tried using ChatGPT to help them with various programming tasks and have achieved good results. However, there are some issues with using ChatGPT directly. Firstly, the generated code often fails to execute correctly, leading to the famous saying "five minutes to code, two hours to debug". Secondly, it is inconvenient to integrate with existing projects as it requires manual interaction with ChatGPT and switching between different platforms. To address these problems, we have proposed the "Generate-Validate-Repair" framework and implemented a prototype. Additionally, to make it easier for everyone to use, we have developed some plugins that can be seamlessly integrated into existing development workflows.</p>
+    <Strong>Getting Started</Strong><br>
+    <span>1. You should use the plugin for your maven project.</span><br>
+<span>2. Ensure that the Java compilation version of your project is at least 11.<br>
+<span>3. Ensure add the dependency entry to the pom.xml file</span><br>
+<code>&lt;dependencies&gt;<br>
+    &nbsp;&nbsp;&lt;dependency&gt;<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&lt;groupId&gt;io.github.ZJU-ACES-ISE&lt;/groupId&gt;<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&lt;artifactId&gt;chatunitest-starter&lt;/artifactId&gt;<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&lt;version&gt;1.0.0&lt;/version&gt;<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&lt;type&gt;pom&lt;/type&gt;<br>
+    &nbsp;&nbsp;&lt;/dependency&gt;<br>
+&lt;/dependencies&gt;</code><br>
+<p>4. Ensure configure your apikeys and confirm the connection: You can configure ChatUnitTest in the IDEA (IntelliJ IDEA) panel by going to <strong>Tools -> ChatUnitTest Setting</strong>, or you can use the shortcut <strong>Ctrl + Shift + P</strong>.</p>
   ]]></description>
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
@@ -31,9 +43,9 @@
         <notificationGroup id="Custom Notification Group"
                            displayType="BALLOON"
                            key="notification.group.name"/>
-        <toolWindow factoryClass="zju.cst.aces.Windows.ConfigSettingWindowFactory" id="configSettingWindow" anchor="right"
+        <!--<toolWindow factoryClass="zju.cst.aces.Windows.ConfigSettingWindowFactory" id="configSettingWindow" anchor="right"
                     icon="/icons/pluginIcon.svg">
-        </toolWindow>
+        </toolWindow>-->
     </extensions>
     <application-components>
         <component>
@@ -46,6 +58,14 @@
             <!-- 将动作添加到 EditorPopupMenu 和 ProjectViewPopupMenu 这两个 group 中 -->
             <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+        </action>
+      <!--  <action class="zju.cst.aces.actions.PromptDefineAction" text="prompt definition" id="prompt_definition_id">
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="first" />
+        </action>-->
+        <action id="ConfigSettingAction_id" class="zju.cst.aces.actions.ConfigSettingAction" text="ChatUnitTest Setting"
+                description="Configure settings of ChatUniTest" icon="/icons/pluginIcon.svg">
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift P"/>
+            <add-to-group group-id="ToolsMenu" anchor="first"></add-to-group>
         </action>
     </actions>
 </idea-plugin>

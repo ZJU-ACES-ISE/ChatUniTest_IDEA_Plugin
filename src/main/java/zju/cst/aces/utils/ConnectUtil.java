@@ -36,8 +36,8 @@ public class ConnectUtil {
                 // 处理响应
                 int statusCode = response.getStatusLine().getStatusCode();
                 String responseContent = EntityUtils.toString(response.getEntity());
-                if (statusCode != 200) {
-                    return false;
+                if (statusCode == 200) {
+                    return true;
                 }
             }
         } catch (IOException e) {
@@ -50,7 +50,7 @@ public class ConnectUtil {
                 e.printStackTrace();
             }
         }
-        return true;
+        return false;
     }
 
 }

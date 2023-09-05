@@ -20,11 +20,11 @@ public class ClassTestGeneration {
             ProjectParser parser = new ProjectParser(config);
             parser.parse();
             ApplicationManager.getApplication().invokeLater(()->{
-                LoggerUtil.info(project, "[ChatTester] Parse finished");
+                LoggerUtil.info(project, "[ChatUniTest] Parse finished");
 
             });
             ApplicationManager.getApplication().invokeLater(()->{
-                LoggerUtil.info(project, "[ChatTester] Generating tests for project: " + project.getName());
+                LoggerUtil.info(project, "[ChatUniTest] Generating tests for project: " + project.getName());
             });
             try {
                 new ClassRunner(fullClassName, config).start();
@@ -32,7 +32,7 @@ public class ClassTestGeneration {
                 throw new RuntimeException(e);
             }
             ApplicationManager.getApplication().invokeLater(()->{
-                LoggerUtil.info(project, "[ChatTester] Generation finished");
+                LoggerUtil.info(project, "[ChatUniTest] Generation finished");
             });
             FileUtil.refreshFolder(config.testOutput);
         });
