@@ -10,7 +10,6 @@ public class ConfigSettingAction extends AnAction {
     @Override
     public void actionPerformed(AnActionEvent event) {
         // TODO: insert action logic here
-        System.out.println("setting ing");
         SettingPanel settingPanel = new SettingPanel();
         settingPanel.show();
     }

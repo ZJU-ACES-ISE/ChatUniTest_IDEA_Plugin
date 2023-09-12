@@ -11,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
         storages = {@Storage("ConfigPersistence.xml")}
 )
 public class ConfigPersistence implements PersistentStateComponent<ConfigPersistence.IdeaConfiguration> {
-    private IdeaConfiguration myConfig=new IdeaConfiguration();
+    private IdeaConfiguration myConfig = new IdeaConfiguration();
 
     @Override
     public @Nullable ConfigPersistence.IdeaConfiguration getState() {
@@ -20,9 +20,8 @@ public class ConfigPersistence implements PersistentStateComponent<ConfigPersist
 
     @Override
     public void loadState(@NotNull IdeaConfiguration ideaConfiguration) {
-        myConfig=ideaConfiguration;
+        myConfig = ideaConfiguration;
     }
-
 
 
     public static class IdeaConfiguration {
@@ -44,5 +43,8 @@ public class ConfigPersistence implements PersistentStateComponent<ConfigPersist
         public Integer presencePenalty;
         public String hostname;
         public String port;
+        public Boolean remind_regenerate;
+        public Boolean remind_repair;
+        public Boolean remind_compile;
     }
 }

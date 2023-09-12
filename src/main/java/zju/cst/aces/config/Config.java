@@ -59,6 +59,26 @@ public class Config {
     public Project project;
     public MavenProject mavenProject;
     public static Application application;
+//    public static boolean regenerate_record;
+    public Integer repair_record=0;
+    public Integer regenerate_record=0;
+
+
+    public Integer getRegenerate_record() {
+        return regenerate_record;
+    }
+
+    public void setRegenerate_record(Integer regenerate_record) {
+        this.regenerate_record = regenerate_record;
+    }
+
+    public Integer getRepair_record() {
+        return repair_record;
+    }
+
+    public void setRepair_record(Integer repair_record) {
+        this.repair_record = repair_record;
+    }
 
     public static class ConfigBuilder {
         public DependencyGraphBuilder dependencyGraphBuilder;

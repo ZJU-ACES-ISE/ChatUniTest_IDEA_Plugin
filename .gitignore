@@ -40,3 +40,8 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+
+chatunitest/
+tmp/
+src/main/java/*_*_*_*_*.java

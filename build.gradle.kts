@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "com.hhh.plugin"
-version = "2.0"
+version = "2.0-SNAPSHOT"
 
 repositories {
     mavenCentral()

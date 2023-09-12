@@ -8,8 +8,12 @@ import zju.cst.aces.config.Config;
 import zju.cst.aces.parser.ProjectParser;
 import zju.cst.aces.runner.ClassRunner;
 import zju.cst.aces.utils.LoggerUtil;
+import zju.cst.aces.utils.UpdateGitignoreUtil;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.CompletableFuture;
 
 public class ClassTestGeneration {
@@ -32,6 +36,14 @@ public class ClassTestGeneration {
                 throw new RuntimeException(e);
             }
             ApplicationManager.getApplication().invokeLater(()->{
+                ApplicationManager.getApplication().runWriteAction(()->{
+                    Path path = Paths.get(project.getBasePath(), ".gitignore");
+                    File file = path.toFile();
+                    //没有gitignore则无需处理
+                    if(file.exists()){
+                        UpdateGitignoreUtil.removeFromFile(file);
+                    }
+                });
                 LoggerUtil.info(project, "[ChatUniTest] Generation finished");
             });
             FileUtil.refreshFolder(config.testOutput);

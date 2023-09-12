@@ -62,10 +62,21 @@
       <!--  <action class="zju.cst.aces.actions.PromptDefineAction" text="prompt definition" id="prompt_definition_id">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="first" />
         </action>-->
-        <action id="ConfigSettingAction_id" class="zju.cst.aces.actions.ConfigSettingAction" text="ChatUnitTest Setting"
-                description="Configure settings of ChatUniTest" icon="/icons/pluginIcon.svg">
-            <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift P"/>
-            <add-to-group group-id="ToolsMenu" anchor="first"></add-to-group>
-        </action>
+        <group
+                id="org.intellij.sdk.action.GroupedActions"
+                text="ChatUniTest"
+                popup="true"
+                icon="/icons/pluginIcon.svg">
+            <add-to-group
+                    group-id="ToolsMenu"
+                    anchor="after"
+                    relative-to-action="org.intellij.sdk.action.PopupDialogAction"/>
+            <action
+                    class="zju.cst.aces.actions.ConfigSettingAction"
+                    id="zju.cst.aces.actions.ConfigSettingAction"
+                    text="Config"
+                    description="ChatUniTest Configuration">
+            </action>
+        </group>
     </actions>
 </idea-plugin>

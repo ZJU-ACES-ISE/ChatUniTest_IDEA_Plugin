@@ -10,8 +10,12 @@ import zju.cst.aces.dto.MethodInfo;
 import zju.cst.aces.runner.ClassRunner;
 import zju.cst.aces.runner.MethodRunner;
 import zju.cst.aces.utils.LoggerUtil;
+import zju.cst.aces.utils.UpdateGitignoreUtil;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.CompletableFuture;
 
 public class MethodTestGeneration {
@@ -49,45 +53,17 @@ public class MethodTestGeneration {
                 throw new RuntimeException("In MethodTestMojo.execute: " + e);
             }
             ApplicationManager.getApplication().invokeLater(()->{
+                ApplicationManager.getApplication().runWriteAction(()->{
+                    Path path = Paths.get(project.getBasePath(), ".gitignore");
+                    File file = path.toFile();
+                    //没有gitignore则无需处理
+                    if(file.exists()){
+                        UpdateGitignoreUtil.removeFromFile(file);
+                    }
+                });
                 LoggerUtil.info(project, "[ChatUniTest] Generation finished");
             });
             FileUtil.refreshFolder(config.testOutput);
         });
-    }
-
-    public static void generate_method_test1(Config config, String fullClassName, String methodName) {
-        Project project = config.project;
-        ProjectParser parser = new ProjectParser(config);
-        parser.parse();
-        LoggerUtil.info(project, "[ChatTester] Parse finished");
-        LoggerUtil.info(project, "[ChatTester] Generating tests for project: " + project.getName());
-        //todo:用户得可以中断生成，要不然一直跑
-        try {
-            LoggerUtil.info(project, "[ChatTester] Generating tests for class:  " + fullClassName
-                    + ", method: " + methodName);
-            ClassRunner classRunner = new ClassRunner(fullClassName, config);
-            ClassInfo classInfo = classRunner.classInfo;
-            MethodInfo methodInfo = null;
-            for (String mSig : classInfo.methodSignatures.keySet()) {
-                if (mSig.split("\\(")[0].equals(methodName)) {
-                    methodInfo = classRunner.getMethodInfo(classInfo, mSig);
-                    break;
-                }
-            }
-            if (methodInfo == null) {
-                throw new RuntimeException("Method " + methodName + " in class " + fullClassName + " not found");
-            }
-            MethodInfo finalMethodInfo = methodInfo;
-            try {
-                LoggerUtil.info(project, "ready to start ");
-                new MethodRunner(fullClassName, config, finalMethodInfo).start();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("In MethodTestMojo.execute: " + e);
-        }
-        LoggerUtil.info(project, "[ChatTester] Generation finished");
-        FileUtil.refreshFolder(config.testOutput);
     }
 }

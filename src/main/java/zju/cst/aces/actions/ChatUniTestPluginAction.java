@@ -1,7 +1,5 @@
 package zju.cst.aces.actions;
 
-import com.intellij.compiler.CompilerConfiguration;
-import com.intellij.compiler.impl.ModuleCompileScope;
 import com.intellij.openapi.compiler.CompileContext;
 import com.intellij.openapi.compiler.CompileStatusNotification;
 import com.intellij.openapi.compiler.CompilerManager;
@@ -9,12 +7,11 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.util.Computable;
 import org.jetbrains.annotations.NotNull;
-import zju.cst.aces.Windows.CompilerDialog;
+import zju.cst.aces.Windows.Panels.SettingPanel;
 import zju.cst.aces.Windows.WindowConfig;
 import zju.cst.aces.Windows.WindowDefaultConfig;
 import zju.cst.aces.config.ConfigPersistence;
-import zju.cst.aces.utils.ConnectUtil;
-import zju.cst.aces.utils.JudgeUtil;
+import zju.cst.aces.utils.*;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
@@ -36,8 +33,9 @@ import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.utils.actions.MavenActionUtil;
 import zju.cst.aces.config.Config;
 import zju.cst.aces.parser.ProjectParser;
-import zju.cst.aces.utils.LoggerUtil;
 
+import java.io.File;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -59,10 +57,48 @@ public class ChatUniTestPluginAction extends AnAction {
                 });
                 return;
             }
-            loadPersistentConfig();
-            if (WindowConfig.apiKeys == null) {
+            CompletableFuture<Integer> dependencyFuture=new CompletableFuture<>();
+            if(!DependencyChecker.hasDependencyWithGroupId(mavenProject,"io.github.ZJU-ACES-ISE","chatunitest-starter")){
                 application.invokeLater(()->{
-                    Messages.showMessageDialog("Please set apikey first", "Error", Messages.getErrorIcon());
+                    application.invokeLater(()->{
+                        int result = Messages.showDialog(
+                                project,
+                                "Seems like “chatunitest-starter” dependency is missing",
+                                "Warning",
+                                new String[]{"Ignore", "Stop"},
+                                0,
+                                Messages.getWarningIcon()
+                        );
+                        dependencyFuture.complete(result);
+                    });
+                });
+                try {
+                    int addDependencyChoice=dependencyFuture.get();
+                    if(addDependencyChoice==1){
+                        return;
+                    }
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                } catch (ExecutionException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            //设置gitignore，防止中间文件产生过程中经常提示用户添加到git中（用户也可以在idea中自行设置）
+            application.invokeLater(()->{
+                application.runWriteAction(()->{
+                    Path path = Paths.get(project.getBasePath(), ".gitignore");
+                    File file = path.toFile();
+                    //没有gitignore则无需处理
+                    if(file.exists()){
+                        UpdateGitignoreUtil.addToFile(file);
+                    }
+                });
+            });
+            loadPersistentConfig();
+            if (WindowConfig.apiKeys == null||WindowConfig.apiKeys[0].equals("")) {
+                application.invokeLater(()->{
+                    SettingPanel settingPanel = new SettingPanel();
+                    settingPanel.show();
                 });
                 return;
             }
@@ -75,75 +111,82 @@ public class ChatUniTestPluginAction extends AnAction {
             }
             VirtualFile virtualFile = event.getData(PlatformDataKeys.VIRTUAL_FILE);
 
-            //parse the project
-            ProjectParser parser = new ProjectParser(config);
-            application.invokeLater(()->{
-                LoggerUtil.info(project, "[ChatUniTest] Parsing class info");
-            });
+
             CompilerManager compilerManager = CompilerManager.getInstance(project);
             VirtualFile currentFile = event.getDataContext().getData(CommonDataKeys.VIRTUAL_FILE);
-            Module module = ModuleUtilCore.findModuleForFile(currentFile, project);
-            CompletableFuture<Integer> compileDialogResult = new CompletableFuture<>();
-            application.invokeLater(()->{
-                int result = Messages.showDialog(
-                        project,
-                        "Insure the project has been compiled",
-                        "Compile Confirm",
-                        new String[]{"Skip", "Compile"},
-                        0, // Default option (0: "Skip", 1: "Compile")
-                        Messages.getWarningIcon()
-                );
-                compileDialogResult.complete(result);
-            });
-            try {
-                if(compileDialogResult.get()==1){
-                    CompletableFuture<Boolean> compileFuture=new CompletableFuture<>();
-                    application.invokeLater(()->{
-                        compilerManager.compile(module, new CompileStatusNotification() {
-                            @Override
-                            public void finished(boolean aborted, int errors, int warnings, @NotNull CompileContext compileContext) {
-                                if(errors>0){
-                                    application.invokeLater(()->{
-                                        Messages.showMessageDialog("Compile project failed", "Error", Messages.getErrorIcon());
-                                    });
-                                    compileFuture.complete(false);
+
+            ConfigPersistence configPersistence=application.getComponent(ConfigPersistence.class);
+            ConfigPersistence.IdeaConfiguration ideaConfiguration=configPersistence.getState();
+
+            if(WindowConfig.compileReminder==true){
+                Module module = ModuleUtilCore.findModuleForFile(currentFile, project);
+                CompletableFuture<Integer> compileDialogResult = new CompletableFuture<>();
+                application.invokeLater(()->{
+                    int result = Messages.showDialog(
+                            project,
+                            "Insure the project has been compiled and parsed",
+                            "Compile Confirm",
+                            new String[]{"Skip", "Compile"},
+                            0, // Default option (0: "Skip", 1: "Compile")
+                            Messages.getWarningIcon()
+                    );
+                    compileDialogResult.complete(result);
+                });
+                try {
+                    if(compileDialogResult.get()==1){
+                        CompletableFuture<Boolean> compileFuture=new CompletableFuture<>();
+                        application.invokeLater(()->{
+                            compilerManager.compile(module, new CompileStatusNotification() {
+                                @Override
+                                public void finished(boolean aborted, int errors, int warnings, @NotNull CompileContext compileContext) {
+                                    if(errors>0){
+                                        application.invokeLater(()->{
+                                            Messages.showMessageDialog("Compile project failed", "Error", Messages.getErrorIcon());
+                                        });
+                                        compileFuture.complete(false);
+                                    }
+                                    else {
+                                        compileFuture.complete(true);
+                                    }
                                 }
-                                else {
-                                    compileFuture.complete(true);
-                                }
+                            });
+                        });
+                        try {
+                            if(!compileFuture.get()){
+                                return;
                             }
-                        });
-                    });
-                    try {
-                        if(!compileFuture.get()){
-                            return;
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        } catch (ExecutionException e) {
+                            throw new RuntimeException(e);
                         }
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    } catch (ExecutionException e) {
-                        throw new RuntimeException(e);
                     }
-                    CompletableFuture<Void> classRunnerTask = CompletableFuture.runAsync(() -> {
-                        parser.parse();
-                    });
-                    try {
-                        classRunnerTask.get();
-                        application.invokeLater(()->{
-                            LoggerUtil.info(project, "[ChatUniTest] Project parse finished");
-                        });
-                    } catch (InterruptedException | ExecutionException e) {
-                        application.invokeLater(()->{
-                            LoggerUtil.info(project, "[ChatUniTest] Project parse failed");
-                        });
-                        throw new RuntimeException(e);
-                    }
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                } catch (ExecutionException e) {
+                    throw new RuntimeException(e);
                 }
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            } catch (ExecutionException e) {
-                throw new RuntimeException(e);
             }
 
+            //parse the project
+            ProjectParser parser = new ProjectParser(config);
+            CompletableFuture<Void> classRunnerTask = CompletableFuture.runAsync(() -> {
+                application.invokeLater(()->{
+                    LoggerUtil.info(project, "[ChatUniTest] Parsing class info");
+                });
+                parser.parse();
+            });
+            try {
+                classRunnerTask.get();
+                application.invokeLater(()->{
+                    LoggerUtil.info(project, "[ChatUniTest] Project parse finished");
+                });
+            } catch (InterruptedException | ExecutionException e) {
+                application.invokeLater(()->{
+                    LoggerUtil.info(project, "[ChatUniTest] Project parse failed");
+                });
+                throw new RuntimeException(e);
+            }
             if (basePath.equals(virtualFile.getPath())) {
                 ProjectTestGeneration.generate_project_test(config);
                 return;
@@ -265,6 +308,9 @@ public class ChatUniTestPluginAction extends AnAction {
         Integer maxThreads_per = ideaConfiguration.maxThreads;
         String testOutput_per = ideaConfiguration.testOutput;
         Integer maxPromptTokens_per = ideaConfiguration.maxPromptTokens;
+        Boolean repairReminder = ideaConfiguration.remind_repair;
+        Boolean regenerateReminder = ideaConfiguration.remind_regenerate;
+        Boolean compileReminder = ideaConfiguration.remind_compile;
         WindowConfig.apiKeys = apiKeys_per;
         WindowConfig.hostname = hostname_per!=null?hostname_per:"";
         WindowConfig.port = port_per!=null?port_per:"";
@@ -283,5 +329,8 @@ public class ChatUniTestPluginAction extends AnAction {
         WindowConfig.stopWhenSuccess = stopWhenSuccess_per;
         WindowConfig.enableMultithreading = enableMultithreading_per;
         WindowConfig.noExecution = noExecution_per;
+        WindowConfig.compileReminder=compileReminder;
+        WindowConfig.repairReminder=repairReminder;
+        WindowConfig.regenerateReminder=regenerateReminder;
     }
 }

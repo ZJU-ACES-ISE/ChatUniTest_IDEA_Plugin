@@ -24,4 +24,8 @@ public class CompilerDialog extends DialogWrapper {
         return panel;
     }
 
+    public static void main(String[] args) {
+        CompilerDialog compilerDialog = new CompilerDialog();
+        compilerDialog.show();
+    }
 }

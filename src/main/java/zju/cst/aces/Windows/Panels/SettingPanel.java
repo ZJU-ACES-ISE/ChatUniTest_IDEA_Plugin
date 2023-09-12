@@ -7,6 +7,7 @@ package zju.cst.aces.Windows.Panels;
 
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.util.ui.UIUtil;
 import net.miginfocom.swing.MigLayout;
 import zju.cst.aces.Windows.WindowConfig;
 import zju.cst.aces.Windows.WindowDefaultConfig;
@@ -17,9 +18,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-/**
- * @author Brainrain
- */
 public class SettingPanel extends JFrame {
     public SettingPanel() {
         initComponents();
@@ -45,6 +43,9 @@ public class SettingPanel extends JFrame {
         Integer maxThreads_per = ideaConfiguration.maxThreads;
         String testOutput_per = ideaConfiguration.testOutput;
         Integer maxPromptTokens_per = ideaConfiguration.maxPromptTokens;
+        Boolean remind_repair_per=ideaConfiguration.remind_repair;
+        Boolean remind_regenerate_per=ideaConfiguration.remind_regenerate;
+        Boolean remind_compile_per=ideaConfiguration.remind_compile;
         apikey.setText(apiKeys_per!=null?String.join(",",apiKeys_per):"");
         hostname.setText(hostname_per!=null?hostname_per:"");
         port.setText(port_per!=null?port_per:"");
@@ -63,13 +64,15 @@ public class SettingPanel extends JFrame {
         maxThreads.setText(maxThreads_per!=null? String.valueOf(maxThreads_per) : String.valueOf(WindowDefaultConfig.maxThreads));
         testOutput.setText(testOutput_per!=null?testOutput_per:WindowDefaultConfig.testOutput);
         maxPromptTokens.setText(maxPromptTokens_per!=null? String.valueOf(maxPromptTokens_per) : String.valueOf(WindowDefaultConfig.maxPromptTokens));
+        compileReminder.setSelected(remind_compile_per!=null?remind_compile_per:WindowDefaultConfig.compileReminder);
+        regenerateReminder.setSelected(remind_regenerate_per!=null?remind_regenerate_per:WindowDefaultConfig.regenerateReminder);
+        repairReminder.setSelected(remind_repair_per!=null?remind_repair_per:WindowDefaultConfig.repairReminder);
+        //replace name
         confirm();
     }
     private void confirm() {
-
         ConfigPersistence configPersistence = ApplicationManager.getApplication().getComponent(ConfigPersistence.class);
         ConfigPersistence.IdeaConfiguration ideaConfiguration=configPersistence.getState();
-
         ideaConfiguration.apiKeys = apikey.getText().split(",");
         ideaConfiguration.hostname = hostname.getText();
         ideaConfiguration.port = (port.getText().equals("") ? null : (port.getText()));
@@ -88,6 +91,9 @@ public class SettingPanel extends JFrame {
         ideaConfiguration.stopWhenSuccess = stopWhenSuccess.isSelected();
         ideaConfiguration.enableMultithreading = enableMultithreading.isSelected();
         ideaConfiguration.noExecution = noExecution.isSelected();
+        ideaConfiguration.remind_compile = compileReminder.isSelected();
+        ideaConfiguration.remind_regenerate = regenerateReminder.isSelected();
+        ideaConfiguration.remind_repair = repairReminder.isSelected();
         configPersistence.loadState(ideaConfiguration);//更新持久化
 
         WindowConfig.apiKeys = apikey.getText().split(",");
@@ -108,6 +114,10 @@ public class SettingPanel extends JFrame {
         WindowConfig.stopWhenSuccess = stopWhenSuccess.isSelected();
         WindowConfig.enableMultithreading = enableMultithreading.isSelected();
         WindowConfig.noExecution = noExecution.isSelected();
+        WindowConfig.compileReminder = compileReminder.isSelected();
+        WindowConfig.repairReminder = repairReminder.isSelected();
+        WindowConfig.regenerateReminder = regenerateReminder.isSelected();
+
         fillPanelInfoByConfig();
     }
 
@@ -130,6 +140,9 @@ public class SettingPanel extends JFrame {
         maxThreads.setText(String.valueOf(WindowConfig.maxThreads));
         testOutput.setText(WindowConfig.testOutput);
         maxPromptTokens.setText(String.valueOf(WindowConfig.maxPromptTokens));
+        repairReminder.setSelected(WindowConfig.repairReminder);
+        compileReminder.setSelected(WindowConfig.compileReminder);
+        regenerateReminder.setSelected(WindowConfig.regenerateReminder);
     }
 
     private void windowClosing(WindowEvent e) {
@@ -143,8 +156,16 @@ public class SettingPanel extends JFrame {
             SwingUtilities.invokeLater(()->{
                 testStatus.setText("");
                 if (isConnected) {
-                    testStatus.setForeground(Color.white);
+                    if(UIUtil.isUnderDarcula()){
+                        testStatus.setForeground(Color.white);
+                    }
+                    else {
+                        testStatus.setForeground(Color.GRAY);
+                    }
                     testStatus.setText("connection successful");
+                   /* ApplicationManager.getApplication().invokeLater(()->{
+                        LoggerUtil.info("connect successful", );
+                    });*/
                 } else {
                     testStatus.setForeground(Color.red);
                     testStatus.setText("connection failed");
@@ -200,24 +221,31 @@ public class SettingPanel extends JFrame {
         tmpOutput = new JTextField();
         label22 = new JLabel();
         testOutput = new JTextField();
+        separator1 = new JSeparator();
+        separator2 = new JSeparator();
+        panel1 = new JPanel();
+        label23=new JLabel();
+        regenerateReminder = new JCheckBox();
+        compileReminder = new JCheckBox();
+        repairReminder = new JCheckBox();
         setTitle("ChatUniTest config");
         //======== panel5 ========
         {
             panel5.setLayout(new MigLayout(
-                "insets 0,hidemode 3,align center center,gap 5 5",
-                // columns
-                "[fill]" +
-                "[fill]" +
-                "[fill]" +
-                "[fill]" +
-                "[fill]",
-                // rows
-                "[fill]" +
-                "[fill]" +
-                "[fill]" +
-                "[fill]" +
-                "[fill]" +
-                "[fill]"));
+                    "insets 0,hidemode 3,align center center,gap 5 5",
+                    // columns
+                    "[fill]" +
+                            "[fill]" +
+                            "[fill]" +
+                            "[fill]" +
+                            "[fill]",
+                    // rows
+                    "[fill]" +
+                            "[fill]" +
+                            "[fill]" +
+                            "[fill]" +
+                            "[fill]" +
+                            "[fill]"));
 
             //---- label2 ----
             label2.setText("Model:");
@@ -226,8 +254,8 @@ public class SettingPanel extends JFrame {
 
             //---- model ----
             model.setModel(new DefaultComboBoxModel<>(new String[] {
-                "gpt-3.5-turbo",
-                "gpt-4"
+                    "gpt-3.5-turbo",
+                    "gpt-4"
             }));
             panel5.add(model, "cell 2 0 3 1");
 
@@ -275,34 +303,39 @@ public class SettingPanel extends JFrame {
 
         //======== panel11 ========
         {
-            panel11.setBackground(new Color(230, 235, 240));
+            if(UIUtil.isUnderDarcula()){
+                panel11.setBackground(new Color(62, 67, 76));
+            }
+            else {
+                panel11.setBackground(new Color(230, 235, 240));
+            }
             panel11.setLayout(new MigLayout(
-                "filly,hidemode 3,align left center",
-                // columns
-                "[fill]",
-                // rows
-                "[]" +
-                "[]" +
-                "[]" +
-                "[]" +
-                "[]" +
-                "[]" +
-                "[]" +
-                "[]" +
-                "[]" +
-                "[]" +
-                "[]" +
-                "[]" +
-                "[]" +
-                "[]" +
-                "[]" +
-                "[]" +
-                "[]" +
-                "[]" +
-                "[]"));
+                    "filly,hidemode 3,align left center",
+                    // columns
+                    "[fill]",
+                    // rows
+                    "[]" +
+                            "[]" +
+                            "[]" +
+                            "[]" +
+                            "[]" +
+                            "[]" +
+                            "[]" +
+                            "[]" +
+                            "[]" +
+                            "[]" +
+                            "[]" +
+                            "[]" +
+                            "[]" +
+                            "[]" +
+                            "[]" +
+                            "[]" +
+                            "[]" +
+                            "[]" +
+                            "[]"));
 
             //---- label17 ----
-            label17.setText("gpt connection");
+            label17.setText("GPT Connection");
             label17.setFont(label17.getFont().deriveFont(label17.getFont().getStyle() | Font.BOLD));
             label17.addMouseListener(new MouseAdapter() {
                 @Override
@@ -313,7 +346,7 @@ public class SettingPanel extends JFrame {
             panel11.add(label17, "cell 0 3,alignx left,growx 0");
 
             //---- label18 ----
-            label18.setText("gpt configuration");
+            label18.setText("GPT Configuration");
             label18.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
@@ -323,7 +356,7 @@ public class SettingPanel extends JFrame {
             panel11.add(label18, "cell 0 5,alignx left,growx 0");
 
             //---- label19 ----
-            label19.setText("test settings");
+            label19.setText("Test Settings");
             label19.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
@@ -331,6 +364,16 @@ public class SettingPanel extends JFrame {
                 }
             });
             panel11.add(label19, "cell 0 7,alignx left,growx 0");
+
+            //---- label23 ----
+            label23.setText("Confirmation");
+            label23.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    mouseClickButton4(e);
+                }
+            });
+            panel11.add(label23, "cell 0 9");
         }
         contentPane.add(panel11);
         panel11.setBounds(0, 0, panel11.getPreferredSize().width, 293);
@@ -338,42 +381,42 @@ public class SettingPanel extends JFrame {
         //======== panel4 ========
         {
             panel4.setLayout(new MigLayout(
-                "hidemode 3,align center center",
-                // columns
-                "[]" +
-                "[fill]" +
-                "[fill]" +
-                "[fill]" +
-                "[fill]" +
-                "[fill]" +
-                "[fill]" +
-                "[fill]" +
-                "[fill]" +
-                "[fill]" +
-                "[fill]" +
-                "[fill]" +
-                "[fill]" +
-                "[fill]",
-                // rows
-                "[]" +
-                "[]" +
-                "[]" +
-                "[]" +
-                "[]" +
-                "[]" +
-                "[]"));
+                    "hidemode 3,align center center",
+                    // columns
+                    "[]" +
+                            "[fill]" +
+                            "[fill]" +
+                            "[fill]" +
+                            "[fill]" +
+                            "[fill]" +
+                            "[fill]" +
+                            "[fill]" +
+                            "[fill]" +
+                            "[fill]" +
+                            "[fill]" +
+                            "[fill]" +
+                            "[fill]" +
+                            "[fill]",
+                    // rows
+                    "[]" +
+                            "[]" +
+                            "[]" +
+                            "[]" +
+                            "[]" +
+                            "[]" +
+                            "[]"));
 
             //---- label1 ----
             label1.setText("Apikeys:");
             label1.setToolTipText("(Not NULL) Apikeys of OpenAI,please split each apikey with ','");
             panel4.add(label1, "cell 4 2");
-            panel4.add(apikey, "cell 5 2 6 1,growy");
+            panel4.add(apikey, "cell 5 2 9 1,growy");
 
             //---- label3 ----
             label3.setText("Host:");
             label3.setToolTipText("(Nullable) Host of your proxy");
             panel4.add(label3, "cell 4 3");
-            panel4.add(hostname, "cell 5 3 6 1");
+            panel4.add(hostname, "cell 5 3 9 1");
 
             //---- label4 ----
             label4.setText("Port:");
@@ -385,7 +428,7 @@ public class SettingPanel extends JFrame {
             testConnectionButton.setText("test connection");
             testConnectionButton.addActionListener(e -> testConnection(e));
             panel4.add(testConnectionButton, "cell 4 6 3 1");
-            panel4.add(testStatus, "cell 7 6");
+            panel4.add(testStatus, "cell 7 6 7 1");
         }
         contentPane.add(panel4);
         panel4.setBounds(121, 0, 347, 293);
@@ -408,21 +451,21 @@ public class SettingPanel extends JFrame {
         setLocationRelativeTo(getOwner());
 
         //======== panel6 ========
-        {
+        /*{
             panel6.setLayout(new MigLayout(
-                "insets 0,hidemode 3,align center center,gap 5 5",
-                // columns
-                "[fill]" +
-                "[fill]" +
-                "[fill]" +
-                "[fill]",
-                // rows
-                "[]" +
-                "[]" +
-                "[fill]" +
-                "[fill]" +
-                "[fill]" +
-                "[]"));
+                    "insets 0,hidemode 3,align center center,gap 5 5",
+                    // columns
+                    "[fill]" +
+                            "[fill]" +
+                            "[fill]" +
+                            "[fill]",
+                    // rows
+                    "[]" +
+                            "[]" +
+                            "[fill]" +
+                            "[fill]" +
+                            "[fill]" +
+                            "[]"));
 
             //---- label14 ----
             label14.setText("StopWhenSuccess");
@@ -444,6 +487,8 @@ public class SettingPanel extends JFrame {
             label16.setToolTipText("generate  but not execute the test");
             panel6.add(label16, "cell 0 1");
             panel6.add(noExecution, "cell 1 1,align center center,grow 0 0");
+            panel6.add(separator1, "cell 0 4 4 1,gapx 0 0,gapy 10 10");
+
 
             //---- label11 ----
             label11.setText("MaxThreads:");
@@ -461,6 +506,7 @@ public class SettingPanel extends JFrame {
             label13.setToolTipText("max round number when generate a test");
             panel6.add(label13, "cell 0 3");
             panel6.add(maxRounds, "cell 1 3");
+            panel6.add(separator2, "cell 0 7 4 1,gapx 0 0,gapy 10 10");
 
             //---- label21 ----
             label21.setText("tmpOutput:");
@@ -473,6 +519,112 @@ public class SettingPanel extends JFrame {
             label22.setToolTipText("output path for test generated results");
             panel6.add(label22, "cell 0 5");
             panel6.add(testOutput, "cell 1 5 2 1");
+
+
+        }*/
+        {
+            panel6.setLayout(new MigLayout(
+                    "insets 0,hidemode 3,align center center,gap 5 5",
+                    // columns
+                    "[fill]" +
+                            "[fill]" +
+                            "[fill]" +
+                            "[fill]",
+                    // rows
+                    "[]" +
+                            "[]" +
+                            "[fill]" +
+                            "[fill]" +
+                            "[]" +
+                            "[]" +
+                            "[]" +
+                            "[]" +
+                            "[fill]" +
+                            "[]" +
+                            "[]" +
+                            "[]"));
+
+            //---- label14 ----
+            label14.setText("StopWhenSuccess");
+            label14.setToolTipText("stop generate tests when successful");
+            panel6.add(label14, "cell 0 2");
+
+            //---- stopWhenSuccess ----
+            stopWhenSuccess.setSelected(true);
+            panel6.add(stopWhenSuccess, "cell 1 2,align center center,grow 0 0");
+
+            //---- label15 ----
+            label15.setText("EnableMultithreading");
+            label15.setToolTipText("use multithreads");
+            panel6.add(label15, "cell 2 2");
+            panel6.add(enableMultithreading, "cell 3 2,align center center,grow 0 0");
+
+            //---- label16 ----
+            label16.setText("NoExecution");
+            label16.setToolTipText("generate  but not execute the test");
+            panel6.add(label16, "cell 0 3");
+            panel6.add(noExecution, "cell 1 3,align center center,grow 0 0");
+            panel6.add(separator1, "cell 0 4 4 1,gapx 0 0,gapy 5 5");
+
+            //---- label11 ----
+            label11.setText("MaxThreads:");
+            label11.setToolTipText("max threads number when generate test");
+            panel6.add(label11, "cell 0 5");
+            panel6.add(maxThreads, "cell 1 5");
+
+            //---- label12 ----
+            label12.setText("TestNumber:");
+            panel6.add(label12, "cell 2 5");
+            panel6.add(testNumber, "cell 3 5");
+
+            //---- label13 ----
+            label13.setText("MaxRounds:");
+            label13.setToolTipText("max round number when generate a test");
+            panel6.add(label13, "cell 0 6");
+            panel6.add(maxRounds, "cell 1 6");
+            panel6.add(separator2, "cell 0 7 4 1,gapx 0 0,gapy 5 5");
+
+            //---- label21 ----
+            label21.setText("tmpOutput:");
+            panel6.add(label21, "cell 0 8");
+            panel6.add(tmpOutput, "cell 1 8 2 1");
+
+            //---- label22 ----
+            label22.setText("testOutput:");
+            panel6.add(label22, "cell 0 9");
+            panel6.add(testOutput, "cell 1 9 2 1");
+        }
+        //panel1
+        {
+            panel1.setLayout(new MigLayout(
+                    "hidemode 3",
+                    // columns
+                    "[fill]" +
+                            "[fill]" +
+                            "[fill]" +
+                            "[fill]" +
+                            "[fill]",
+                    // rows
+                    "[]" +
+                            "[]" +
+                            "[]" +
+                            "[]" +
+                            "[]" +
+                            "[]" +
+                            "[]"));
+
+
+            //---- checkBox1 ----
+            compileReminder.setText(" Always remind to compile the entire project.");
+            panel1.add(compileReminder, "cell 2 2");
+
+            //---- checkBox2 ----
+            regenerateReminder.setText(" Always auto start next round test fails. ");
+            panel1.add(regenerateReminder, "cell 2 4");
+
+            //---- checkBox3 ----
+            repairReminder.setText(" Always ask to repair when test generate fails. ");
+            panel1.add(repairReminder, "cell 2 6");
         }
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
@@ -523,15 +675,26 @@ public class SettingPanel extends JFrame {
     private JTextField tmpOutput;
     private JLabel label22;
     private JTextField testOutput;
+    private JSeparator separator1;
+    private JSeparator separator2;
+
+    private JLabel label23;
+    private JPanel panel1;
+    private JCheckBox regenerateReminder;
+    private JCheckBox compileReminder;
+    private JCheckBox repairReminder;
+
     private void mouseClickButton1(MouseEvent e) {
         SwingUtilities.invokeLater(() -> {
             label18.setFont(label18.getFont().deriveFont(Font.PLAIN)); // 恢复为正常字体
             label19.setFont(label19.getFont().deriveFont(Font.PLAIN)); // 恢复为正常字体
             label17.setFont(label17.getFont().deriveFont(Font.BOLD)); // 设置为粗体
+            label23.setFont(label23.getFont().deriveFont(Font.PLAIN)); // 设置为粗体
 
             // 移除其他面板
             getContentPane().remove(panel5);
             getContentPane().remove(panel6);
+            getContentPane().remove(panel1);
 
             // 设置 panel4 的位置和大小
             panel4.setBounds(140, 0, 347, 293);
@@ -549,10 +712,12 @@ public class SettingPanel extends JFrame {
             label17.setFont(label17.getFont().deriveFont(Font.PLAIN)); // 恢复为正常字体
             label19.setFont(label19.getFont().deriveFont(Font.PLAIN)); // 恢复为正常字体
             label18.setFont(label18.getFont().deriveFont(Font.BOLD)); // 设置为粗体
+            label23.setFont(label23.getFont().deriveFont(Font.PLAIN)); // 设置为粗体
 
             // 移除其他面板
             getContentPane().remove(panel4);
             getContentPane().remove(panel6);
+            getContentPane().remove(panel1);
 
             // 设置 panel5 的位置和大小
             panel5.setBounds(60, 0, 500, 293);
@@ -570,16 +735,40 @@ public class SettingPanel extends JFrame {
             label17.setFont(label17.getFont().deriveFont(Font.PLAIN)); // 恢复为正常字体
             label18.setFont(label18.getFont().deriveFont(Font.PLAIN)); // 恢复为正常字体
             label19.setFont(label19.getFont().deriveFont(Font.BOLD)); // 设置为粗体
+            label23.setFont(label23.getFont().deriveFont(Font.PLAIN)); // 设置为粗体
 
             // 移除其他面板
             getContentPane().remove(panel4);
             getContentPane().remove(panel5);
+            getContentPane().remove(panel1);
 
             // 设置 panel6 的位置和大小
             panel6.setBounds(80, 0, 480, 293);
 
             // 添加 panel6
             getContentPane().add(panel6);
+
+            revalidate();
+            repaint();
+        });
+    }
+    private void mouseClickButton4(MouseEvent e) {
+        SwingUtilities.invokeLater(() -> {
+            label17.setFont(label17.getFont().deriveFont(Font.PLAIN)); // 恢复为正常字体
+            label18.setFont(label18.getFont().deriveFont(Font.PLAIN)); // 恢复为正常字体
+            label19.setFont(label19.getFont().deriveFont(Font.PLAIN)); // 恢复为正常字体
+            label23.setFont(label23.getFont().deriveFont(Font.BOLD)); // 设置为粗体
+
+            // 移除其他面板
+            getContentPane().remove(panel4);
+            getContentPane().remove(panel5);
+            getContentPane().remove(panel6);
+
+            // 设置 panel6 的位置和大小
+            panel1.setBounds(120, 50, 350, 293);
+
+            // 添加 panel6
+            getContentPane().add(panel1);
 
             revalidate();
             repaint();

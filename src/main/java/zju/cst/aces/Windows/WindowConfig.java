@@ -22,5 +22,7 @@ public class WindowConfig {
     public static int presencePenalty;
     public static String hostname;
     public static String port;
-
+    public static Boolean compileReminder;
+    public static Boolean regenerateReminder;
+    public static Boolean repairReminder;
 }
