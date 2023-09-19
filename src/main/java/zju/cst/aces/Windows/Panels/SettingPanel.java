@@ -620,12 +620,12 @@ public class SettingPanel extends JFrame {
             panel2.add(notifyRepair, "cell 3 2");
 
             //specification相关
-            panel2.add(separator3, "cell 2 3 3 1");
+            /*panel2.add(separator3, "cell 2 3 3 1");
 
             //---- label25 ----
             label25.setText("Test Specification:");
             panel2.add(label25, "cell 2 4");
-            panel2.add(specification, "cell 3 4,aligny center,growy 0");
+            panel2.add(specification, "cell 3 4,aligny center,growy 0");*/
         }
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }

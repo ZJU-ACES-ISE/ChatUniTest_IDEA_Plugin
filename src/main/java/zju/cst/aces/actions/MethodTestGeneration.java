@@ -38,7 +38,7 @@ public class MethodTestGeneration {
     public static void generate_method_test(Config config, String fullClassName, String simpleClassName,
                                             String methodName, String methodBody, PsiImportList importList) {
         ApplicationManager.getApplication().executeOnPooledThread(()->{
-            CompletableFuture<Boolean> specificationFuture = new CompletableFuture<>();
+            /*CompletableFuture<Boolean> specificationFuture = new CompletableFuture<>();
             if(WindowConfig.test_specification){
                 ApplicationManager.getApplication().invokeLater(()->{
                     //test specification部分
@@ -88,7 +88,7 @@ public class MethodTestGeneration {
                 throw new RuntimeException(e);
             } catch (ExecutionException e) {
                 throw new RuntimeException(e);
-            }
+            }*/
             //正常执行
             Project project = config.project;
             ApplicationManager.getApplication().invokeLater(()->{
