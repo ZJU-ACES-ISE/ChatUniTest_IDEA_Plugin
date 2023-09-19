@@ -68,6 +68,9 @@ public class AbstractRunner {
                     }
                 }
             }
+            if(config.getUse_specification()){
+                user+=String.format("\nThe predetermined unit test specification is\n```%s```",config.getSpecification_code());
+            }
         } else {
             int promptTokens = TokenCounter.countToken(promptInfo.unitTest)
                     + TokenCounter.countToken(promptInfo.methodSignature)
@@ -96,26 +99,51 @@ public class AbstractRunner {
                             " You can use Junit 5 and reflection. No explanation is needed.\n",
                     promptInfo.unitTest, processedErrorMsg, promptInfo.methodSignature, promptInfo.className, promptInfo.info);
         }
+        System.out.println("---------------------prompt----------------------\n"+user);
+        //todo:保存至json文件
         return user;
     }
 
     public String generateSystemPrompt(PromptInfo promptInfo) {
-        String system = "Please help me generate a whole JUnit test for a focal method in a focal class.\n" +
-                "I will provide the following information of the focal method:\n" +
-                "1. Required dependencies to import.\n" +
-                "2. The focal class signature.\n" +
-                "3. Source code of the focal method.\n" +
-                "4. Signatures of other methods and fields in the class.\n";
+        String system = "";
+        if (!config.getUse_specification()) {
+            system += "Please help me generate a whole JUnit test for a focal method in a focal class.\n" +
+                    "I will provide the following information of the focal method:\n" +
+                    "1. Required dependencies to import.\n" +
+                    "2. The focal class signature.\n" +
+                    "3. Source code of the focal method.\n" +
+                    "4. Signatures of other methods and fields in the class.\n";
+        } else {
+            system += "Please help me generate a whole JUnit test for a focal method in a focal class.\n" +
+                    "I will provide the following information of the focal method:\n" +
+                    "1. Required dependencies to import.\n" +
+                    "2. The focal class signature.\n" +
+                    "3. Source code of the focal method.\n" +
+                    "4. Signatures of other methods and fields in the class.\n" +
+                    "5. Predetermined unit test specifications in JSON format,which includes a list of test cases with " +
+                    "their names. purposes, and input data.\n";
+        }
         if (promptInfo.hasDep) {
             system += "I will provide following brief information if the focal method has dependencies:\n" +
                     "1. Signatures of dependent classes.\n" +
                     "2. Signatures of dependent methods and fields in the dependent classes.\n";
         }
-        system += "I need you to create a whole unit test using JUnit 5 " +
-                "ensuring optimal branch and line coverage. " +
-                "The whole test should include necessary imports for JUnit 5 " +
-                "compile without errors, and use reflection to invoke private methods. " +
-                "No additional explanations required.\n";
+        if (config.getUse_specification()) {
+            system += "I need you to create a whole unit test using JUnit 5 " +
+                    "ensuring optimal branch and line coverage. " +
+                    "The whole test should include necessary imports for JUnit 5 " +
+                    "compile without errors, and use reflection to invoke private methods. " +
+                    "The whole test should base on the test specifications I provide." +
+                    "No additional explanations required.\n";
+
+        } else {
+            system += "I need you to create a whole unit test using JUnit 5 " +
+                    "ensuring optimal branch and line coverage. " +
+                    "The whole test should include necessary imports for JUnit 5 " +
+                    "compile without errors, and use reflection to invoke private methods. " +
+                    "No additional explanations required.\n";
+        }
+
         return system;
     }
 
@@ -202,7 +230,7 @@ public class AbstractRunner {
             testCase = repairImports(testCase, timeoutImport);
             return testCase.replace("@Test\n", String.format("@Test%n    @Timeout(%d)%n", timeout));
         } else {
-            LoggerUtil.info(config.project,"Generated with unknown JUnit version, try without adding timeout.");
+            LoggerUtil.info(config.project, "Generated with unknown JUnit version, try without adding timeout.");
         }
         return testCase;
     }

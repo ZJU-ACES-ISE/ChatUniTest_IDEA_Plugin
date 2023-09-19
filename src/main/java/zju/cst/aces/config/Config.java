@@ -62,7 +62,24 @@ public class Config {
 //    public static boolean regenerate_record;
     public Integer repair_record=0;
     public Integer regenerate_record=0;
+    public Boolean use_specification=false;
+    public String specification_code;
 
+    public String getSpecification_code() {
+        return specification_code;
+    }
+
+    public void setSpecification_code(String specification_code) {
+        this.specification_code = specification_code;
+    }
+
+    public Boolean getUse_specification() {
+        return use_specification;
+    }
+
+    public void setUse_specification(Boolean use_specification) {
+        this.use_specification = use_specification;
+    }
 
     public Integer getRegenerate_record() {
         return regenerate_record;
