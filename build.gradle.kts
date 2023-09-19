@@ -60,6 +60,6 @@ dependencies {
     implementation ("org.apache.maven.plugin-tools:maven-plugin-annotations:3.8.1")
 
     implementation ("org.junit.platform:junit-platform-launcher:1.5.2")
-
+    implementation ("org.dom4j:dom4j:2.1.3")
 
 }

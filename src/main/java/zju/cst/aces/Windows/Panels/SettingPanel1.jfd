@@ -1,0 +1,316 @@
+JFDML JFormDesigner: "7.0.7.1.1184" Java: "17.0.6" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormWindow( "javax.swing.JFrame", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+			"$layoutConstraints": "fill,hidemode 3"
+			"$columnConstraints": "[fill][fill]"
+			"$rowConstraints": "[]"
+		} ) {
+			name: "this"
+			"iconImage": new com.jformdesigner.model.SwingIcon( 0, "/icons/1693708608234.png" )
+			addEvent( new FormEvent( "java.awt.event.WindowListener", "windowClosing", "windowClosing", true ) )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+				"$layoutConstraints": "filly,hidemode 3,align left center"
+				"$columnConstraints": "[fill]"
+				"$rowConstraints": "[][][][][][][][][][][][][][][][][][][]"
+			} ) {
+				name: "panel11"
+				"background": new java.awt.Color( 230, 235, 240, 255 )
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "label17"
+					"text": "gpt connection"
+					"font": new com.jformdesigner.model.SwingDerivedFont( null, 1, 0, false )
+					addEvent( new FormEvent( "java.awt.event.MouseListener", "mouseClicked", "mouseClickButton1", true ) )
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 0 3,alignx left,growx 0"
+				} )
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "label18"
+					"text": "gpt configuration"
+					addEvent( new FormEvent( "java.awt.event.MouseListener", "mouseClicked", "mouseClickButton2", true ) )
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 0 5,alignx left,growx 0"
+				} )
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "label19"
+					"text": "test settings"
+					addEvent( new FormEvent( "java.awt.event.MouseListener", "mouseClicked", "mouseClickButton3", true ) )
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 0 7,alignx left,growx 0"
+				} )
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 0,growy"
+			} )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+				"$layoutConstraints": "hidemode 3,align center center"
+				"$columnConstraints": "[][fill][fill][fill][fill][fill][fill][fill][fill][fill][fill][fill][fill][fill]"
+				"$rowConstraints": "[][][][][][][]"
+			} ) {
+				name: "panel4"
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "label1"
+					"text": "Apikeys:"
+					"toolTipText": "(Not NULL) Apikeys of OpenAI,please split each apikey with ','"
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 4 2"
+				} )
+				add( new FormComponent( "javax.swing.JTextField" ) {
+					name: "apikey"
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 5 2 9 1,growy"
+				} )
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "label3"
+					"text": "Host:"
+					"toolTipText": "(Nullable) Host of your proxy"
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 4 3"
+				} )
+				add( new FormComponent( "javax.swing.JTextField" ) {
+					name: "hostname"
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 5 3 9 1"
+				} )
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "label4"
+					"text": "Port:"
+					"toolTipText": "(Nullable) Port of your proxy"
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 4 4"
+				} )
+				add( new FormComponent( "javax.swing.JTextField" ) {
+					name: "port"
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 5 4 4 1"
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "testConnectionButton"
+					"text": "test connection"
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "testConnection", true ) )
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 4 6 3 1"
+				} )
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "testStatus"
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 7 6 7 1"
+				} )
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 1 0"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 5, 15 )
+			"size": new java.awt.Dimension( 470, 325 )
+		} )
+		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+			"$layoutConstraints": "insets 0,hidemode 3,align center center,gap 5 5"
+			"$columnConstraints": "[fill][fill][fill][fill][fill]"
+			"$rowConstraints": "[fill][fill][fill][fill][fill][fill]"
+		} ) {
+			name: "panel5"
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label2"
+				"text": "Model:"
+				"toolTipText": "ChatGPT version"
+				addEvent( new FormEvent( "java.awt.event.MouseListener", "mouseEntered", "modelMouseEnter", true ) )
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 0 2 1"
+			} )
+			add( new FormComponent( "javax.swing.JComboBox" ) {
+				name: "model"
+				"model": new javax.swing.DefaultComboBoxModel {
+					selectedItem: "gpt-3.5-turbo"
+					addElement( "gpt-3.5-turbo" )
+					addElement( "gpt-4" )
+				}
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 2 0 3 1"
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label5"
+				"text": "TopP:"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 1"
+			} )
+			add( new FormComponent( "javax.swing.JTextField" ) {
+				name: "topP"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 1 1 2 1"
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label6"
+				"text": "Temperature:"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 3 1"
+			} )
+			add( new FormComponent( "javax.swing.JTextField" ) {
+				name: "temperature"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 4 1"
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label9"
+				"text": "MinErrorTokens:"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 2 2 1"
+			} )
+			add( new FormComponent( "javax.swing.JTextField" ) {
+				name: "minErrorTokens"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 2 2 3 1"
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label10"
+				"text": "MaxPromptTokens:"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 3 2 1"
+			} )
+			add( new FormComponent( "javax.swing.JTextField" ) {
+				name: "maxPromptTokens"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 2 3 3 1"
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label7"
+				"text": "FrequencyPenalty:"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 4 2 1"
+			} )
+			add( new FormComponent( "javax.swing.JTextField" ) {
+				name: "frequencyPenalty"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 2 4 3 1"
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label8"
+				"text": "PresencePenalty:"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 5 2 1"
+			} )
+			add( new FormComponent( "javax.swing.JTextField" ) {
+				name: "presencePenalty"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 2 5 3 1"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 355 )
+			"size": new java.awt.Dimension( 480, 355 )
+		} )
+		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+			"$layoutConstraints": "insets 0,hidemode 3,align center center,gap 5 5"
+			"$columnConstraints": "[fill][fill][fill][fill]"
+			"$rowConstraints": "[][][][fill][fill][][fill][]"
+		} ) {
+			name: "panel6"
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label14"
+				"text": "StopWhenSuccess"
+				"toolTipText": "stop generate tests when successful"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 0"
+			} )
+			add( new FormComponent( "javax.swing.JCheckBox" ) {
+				name: "stopWhenSuccess"
+				"selected": true
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 1 0,align center center,grow 0 0"
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label15"
+				"text": "EnableMultithreading"
+				"toolTipText": "use multithreads"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 2 0"
+			} )
+			add( new FormComponent( "javax.swing.JCheckBox" ) {
+				name: "enableMultithreading"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 3 0,align center center,grow 0 0"
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label16"
+				"text": "NoExecution"
+				"toolTipText": "generate  but not execute the test"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 1"
+			} )
+			add( new FormComponent( "javax.swing.JCheckBox" ) {
+				name: "noExecution"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 1 1,align center center,grow 0 0"
+			} )
+			add( new FormComponent( "javax.swing.JSeparator" ) {
+				name: "separator1"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 2 4 1,gapx 0 0,gapy 10 10"
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label11"
+				"text": "MaxThreads:"
+				"toolTipText": "max threads number when generate test"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 3"
+			} )
+			add( new FormComponent( "javax.swing.JTextField" ) {
+				name: "maxThreads"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 1 3"
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label12"
+				"text": "TestNumber:"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 2 3"
+			} )
+			add( new FormComponent( "javax.swing.JTextField" ) {
+				name: "testNumber"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 3 3"
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label13"
+				"text": "MaxRounds:"
+				"toolTipText": "max round number when generate a test"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 4"
+			} )
+			add( new FormComponent( "javax.swing.JTextField" ) {
+				name: "maxRounds"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 1 4"
+			} )
+			add( new FormComponent( "javax.swing.JSeparator" ) {
+				name: "separator2"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 5 4 1,gapx 0 0,gapy 10 10"
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label21"
+				"text": "tmpOutput:"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 6"
+			} )
+			add( new FormComponent( "javax.swing.JTextField" ) {
+				name: "tmpOutput"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 1 6 2 1"
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label22"
+				"text": "testOutput:"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 7"
+			} )
+			add( new FormComponent( "javax.swing.JTextField" ) {
+				name: "testOutput"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 1 7 2 1"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 510, 355 )
+			"size": new java.awt.Dimension( 470, 355 )
+		} )
+	}
+}

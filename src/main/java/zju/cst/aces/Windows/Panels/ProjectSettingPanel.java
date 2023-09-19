@@ -5,103 +5,127 @@
 package zju.cst.aces.Windows.Panels;
 
 
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.project.Project;
 import com.intellij.util.ui.UIUtil;
 import net.miginfocom.swing.MigLayout;
 import zju.cst.aces.Windows.WindowConfig;
 import zju.cst.aces.Windows.WindowDefaultConfig;
 import zju.cst.aces.config.ConfigPersistence;
+import zju.cst.aces.config.ProjectConfigPersistence;
 import zju.cst.aces.utils.ConnectUtil;
+import zju.cst.aces.utils.ProjectConfigFileUtil;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
-public class SettingPanel extends JFrame {
-    public SettingPanel() {
+/**
+ * 项目级别的config（非全局）
+ */
+public class ProjectSettingPanel extends JFrame {
+    public static File directory_static;
+    public static String fileName_static;
+    public ProjectSettingPanel(AnActionEvent event) {
         initComponents();
         setResizable(false);
-        ConfigPersistence configPersistence = ApplicationManager.getApplication().getComponent(ConfigPersistence.class);
-        ConfigPersistence.IdeaConfiguration ideaConfiguration=configPersistence.getState();
-        String[] apiKeys_per = ideaConfiguration.apiKeys;
-        String hostname_per = ideaConfiguration.hostname;
-        String port_per = ideaConfiguration.port;
-        Integer testNumber_per = ideaConfiguration.testNumber;
-        Integer maxRounds_per = ideaConfiguration.maxRounds;
-        Integer minErrorTokens_per = ideaConfiguration.minErrorTokens;
-        Integer model_index_per = ideaConfiguration.model_index;
-        Integer topP_per = ideaConfiguration.topP;
-        Double temperature_per = ideaConfiguration.temperature;
-        Integer frequencyPenalty_per = ideaConfiguration.frequencyPenalty;
-        Integer presencePenalty_per = ideaConfiguration.presencePenalty;
-        String tmpOutput_per = ideaConfiguration.tmpOutput;
-        Boolean stopWhenSuccess_per = ideaConfiguration.stopWhenSuccess;
-        Boolean enableMultithreading_per = ideaConfiguration.enableMultithreading;
-        Boolean noExecution_per = ideaConfiguration.noExecution;
-        Integer maxThreads_per = ideaConfiguration.maxThreads;
-        String testOutput_per = ideaConfiguration.testOutput;
-        Integer maxPromptTokens_per = ideaConfiguration.maxPromptTokens;
-        Boolean remind_repair_per=ideaConfiguration.remind_repair;
-        Boolean remind_regenerate_per=ideaConfiguration.remind_regenerate;
-        Boolean remind_compile_per=ideaConfiguration.remind_compile;
-        Integer notifyRepair_per=ideaConfiguration.notifyRepair;
-        Boolean test_specification= ideaConfiguration.test_specification;
-        apikey.setText(apiKeys_per!=null?String.join(",",apiKeys_per):"");
-        hostname.setText(hostname_per!=null?hostname_per:"");
-        port.setText(port_per!=null?port_per:"");
-        testNumber.setText(testNumber_per!=null? String.valueOf(testNumber_per) : String.valueOf(WindowDefaultConfig.testNumber));
-        maxRounds.setText(maxRounds_per!=null? String.valueOf(maxRounds_per) : String.valueOf(WindowDefaultConfig.maxRounds));
-        minErrorTokens.setText(minErrorTokens_per!=null? String.valueOf(minErrorTokens_per) : String.valueOf(WindowDefaultConfig.minErrorTokens));
-        model.setSelectedIndex(model_index_per!=null?model_index_per:WindowDefaultConfig.model_index);
-        topP.setText(topP_per!=null? String.valueOf(topP_per) : String.valueOf(WindowDefaultConfig.topP));
-        temperature.setText(temperature_per!=null? String.valueOf(temperature_per) : String.valueOf(WindowDefaultConfig.temperature));
-        frequencyPenalty.setText(frequencyPenalty_per!=null? String.valueOf(frequencyPenalty_per) : String.valueOf(WindowDefaultConfig.frequencyPenalty));
-        presencePenalty.setText(presencePenalty_per!=null? String.valueOf(presencePenalty_per) : String.valueOf(WindowDefaultConfig.presencePenalty));
-        tmpOutput.setText(tmpOutput_per!=null?tmpOutput_per:WindowDefaultConfig.tmpOutput);
-        stopWhenSuccess.setSelected(stopWhenSuccess_per!=null?stopWhenSuccess_per:WindowDefaultConfig.stopWhenSuccess);
-        enableMultithreading.setSelected(enableMultithreading_per!=null?enableMultithreading_per:WindowDefaultConfig.enableMultithreading);
-        noExecution.setSelected(noExecution_per!=null?noExecution_per:WindowDefaultConfig.noExecution);
-        maxThreads.setText(maxThreads_per!=null? String.valueOf(maxThreads_per) : String.valueOf(WindowDefaultConfig.maxThreads));
-        testOutput.setText(testOutput_per!=null?testOutput_per:WindowDefaultConfig.testOutput);
-        maxPromptTokens.setText(maxPromptTokens_per!=null? String.valueOf(maxPromptTokens_per) : String.valueOf(WindowDefaultConfig.maxPromptTokens));
-        compileReminder.setSelected(remind_compile_per!=null?remind_compile_per:WindowDefaultConfig.compileReminder);
-        regenerateReminder.setSelected(remind_regenerate_per!=null?remind_regenerate_per:WindowDefaultConfig.regenerateReminder);
-        repairReminder.setSelected(remind_repair_per!=null?remind_repair_per:WindowDefaultConfig.repairReminder);
-        notifyRepair.setSelectedIndex(notifyRepair_per!=null?notifyRepair_per:WindowDefaultConfig.notifyRepair);
-        specification.setSelected(test_specification!=null?test_specification:true);
+        Project project = event.getProject();
+        String directoryPath = project.getBasePath()+"/.idea"; // 替换为你的目录路径
+        String fileName = project.getName()+".xml"; // 替换为要创建的文件名
+        fileName_static=fileName;
+        File directory = new File(directoryPath);
+        directory_static=directory;
+        File file = new File(directory, fileName);
+        if(!file.exists()){
+            try {
+                ProjectConfigFileUtil.createConfigFile(directoryPath,fileName);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        Path path = Paths.get(directoryPath, fileName);
+        ProjectConfigPersistence configPersistence = ProjectConfigFileUtil.loadProjectConfig(path.toFile().getPath());
+        String[] apiKeys_per = configPersistence.apiKeys;
+        String hostname_per = configPersistence.hostname;
+        String port_per = configPersistence.port;
+        Integer testNumber_per = configPersistence.testNumber;
+        Integer maxRounds_per = configPersistence.maxRounds;
+        Integer minErrorTokens_per = configPersistence.minErrorTokens;
+        Integer model_index_per = configPersistence.model_index;
+        Integer topP_per = configPersistence.topP;
+        Double temperature_per = configPersistence.temperature;
+        Integer frequencyPenalty_per = configPersistence.frequencyPenalty;
+        Integer presencePenalty_per = configPersistence.presencePenalty;
+        String tmpOutput_per = configPersistence.tmpOutput;
+        Boolean stopWhenSuccess_per = configPersistence.stopWhenSuccess;
+        Boolean enableMultithreading_per = configPersistence.enableMultithreading;
+        Boolean noExecution_per = configPersistence.noExecution;
+        Integer maxThreads_per = configPersistence.maxThreads;
+        String testOutput_per = configPersistence.testOutput;
+        Integer maxPromptTokens_per = configPersistence.maxPromptTokens;
+        Boolean remind_repair_per=configPersistence.remind_repair;
+        Boolean remind_regenerate_per=configPersistence.remind_regenerate;
+        Boolean remind_compile_per=configPersistence.remind_compile;
+        Integer notifyRepair_per=configPersistence.notifyRepair;
+        apikey.setText(String.join(",",apiKeys_per));
+        hostname.setText(hostname_per);
+        port.setText(port_per);
+        testNumber.setText(String.valueOf(testNumber_per));
+        maxRounds.setText(String.valueOf(maxRounds_per));
+        minErrorTokens.setText(String.valueOf(minErrorTokens_per));
+        model.setSelectedIndex(model_index_per);
+        topP.setText(String.valueOf(topP_per));
+        temperature.setText(String.valueOf(temperature_per));
+        frequencyPenalty.setText(String.valueOf(frequencyPenalty_per));
+        presencePenalty.setText(String.valueOf(presencePenalty_per));
+        tmpOutput.setText(tmpOutput_per);
+        stopWhenSuccess.setSelected(stopWhenSuccess_per);
+        enableMultithreading.setSelected(enableMultithreading_per);
+        noExecution.setSelected(noExecution_per);
+        maxThreads.setText( String.valueOf(maxThreads_per));
+        testOutput.setText(testOutput_per);
+        maxPromptTokens.setText(String.valueOf(maxPromptTokens_per));
+        compileReminder.setSelected(remind_compile_per);
+        regenerateReminder.setSelected(remind_regenerate_per);
+        repairReminder.setSelected(remind_repair_per);
+        notifyRepair.setSelectedIndex(notifyRepair_per);
         //replace name
         confirm();
     }
     private void confirm() {
-        ConfigPersistence configPersistence = ApplicationManager.getApplication().getComponent(ConfigPersistence.class);
-        ConfigPersistence.IdeaConfiguration ideaConfiguration=configPersistence.getState();
-        ideaConfiguration.apiKeys = apikey.getText().split(",");
-        ideaConfiguration.hostname = hostname.getText();
-        ideaConfiguration.port = (port.getText().equals("") ? null : (port.getText()));
-        ideaConfiguration.testNumber = (testNumber.getText().equals("") ? WindowDefaultConfig.testNumber : Integer.parseInt(testNumber.getText()));
-        ideaConfiguration.maxRounds = (maxRounds.getText().equals("") ? WindowDefaultConfig.maxRounds : Integer.parseInt(maxRounds.getText()));
-        ideaConfiguration.minErrorTokens = (minErrorTokens.getText().equals("") ? WindowDefaultConfig.minErrorTokens : Integer.parseInt(minErrorTokens.getText()));
-        ideaConfiguration.topP = (topP.getText().equals("") ? WindowDefaultConfig.topP : Integer.parseInt(topP.getText()));
-        ideaConfiguration.temperature = (temperature.getText().equals("") ? WindowDefaultConfig.temperature : Double.parseDouble(temperature.getText()));
-        ideaConfiguration.frequencyPenalty = (frequencyPenalty.getText().equals("") ? WindowDefaultConfig.frequencyPenalty : Integer.parseInt(frequencyPenalty.getText()));
-        ideaConfiguration.presencePenalty = (presencePenalty.getText().equals("") ? WindowDefaultConfig.presencePenalty : Integer.parseInt(presencePenalty.getText()));
-        ideaConfiguration.tmpOutput = (tmpOutput.getText().equals("") ? WindowDefaultConfig.tmpOutput : tmpOutput.getText());
-        ideaConfiguration.testOutput = (testOutput.getText().equals("") ? WindowDefaultConfig.testOutput : testOutput.getText());
-        ideaConfiguration.maxPromptTokens = (maxPromptTokens.getText().equals("") ? WindowDefaultConfig.maxPromptTokens : Integer.parseInt(maxPromptTokens.getText()));
-        ideaConfiguration.model_index = model.getSelectedIndex();
-        ideaConfiguration.maxThreads = (maxThreads.getText().equals("") ? WindowDefaultConfig.maxThreads : Integer.parseInt(maxThreads.getText()));
-        ideaConfiguration.stopWhenSuccess = stopWhenSuccess.isSelected();
-        ideaConfiguration.enableMultithreading = enableMultithreading.isSelected();
-        ideaConfiguration.noExecution = noExecution.isSelected();
-        ideaConfiguration.remind_compile = compileReminder.isSelected();
-        ideaConfiguration.remind_regenerate = regenerateReminder.isSelected();
-        ideaConfiguration.remind_repair = repairReminder.isSelected();
-        ideaConfiguration.notifyRepair=notifyRepair.getSelectedIndex();
-        ideaConfiguration.test_specification=specification.isSelected();
-        configPersistence.loadState(ideaConfiguration);//更新持久化
+        ProjectConfigPersistence configPersistence=new ProjectConfigPersistence();
+        configPersistence.apiKeys = apikey.getText().split(",");
+        configPersistence.hostname = hostname.getText();
+        configPersistence.port = port.getText();
+        configPersistence.testNumber = (testNumber.getText().equals("") ? WindowDefaultConfig.testNumber : Integer.parseInt(testNumber.getText()));
+        configPersistence.maxRounds = (maxRounds.getText().equals("") ? WindowDefaultConfig.maxRounds : Integer.parseInt(maxRounds.getText()));
+        configPersistence.minErrorTokens = (minErrorTokens.getText().equals("") ? WindowDefaultConfig.minErrorTokens : Integer.parseInt(minErrorTokens.getText()));
+        configPersistence.topP = (topP.getText().equals("") ? WindowDefaultConfig.topP : Integer.parseInt(topP.getText()));
+        configPersistence.temperature = (temperature.getText().equals("") ? WindowDefaultConfig.temperature : Double.parseDouble(temperature.getText()));
+        configPersistence.frequencyPenalty = (frequencyPenalty.getText().equals("") ? WindowDefaultConfig.frequencyPenalty : Integer.parseInt(frequencyPenalty.getText()));
+        configPersistence.presencePenalty = (presencePenalty.getText().equals("") ? WindowDefaultConfig.presencePenalty : Integer.parseInt(presencePenalty.getText()));
+        configPersistence.tmpOutput = (tmpOutput.getText().equals("") ? WindowDefaultConfig.tmpOutput : tmpOutput.getText());
+        configPersistence.testOutput = (testOutput.getText().equals("") ? WindowDefaultConfig.testOutput : testOutput.getText());
+        configPersistence.maxPromptTokens = (maxPromptTokens.getText().equals("") ? WindowDefaultConfig.maxPromptTokens : Integer.parseInt(maxPromptTokens.getText()));
+        configPersistence.model_index = model.getSelectedIndex();
+        configPersistence.maxThreads = (maxThreads.getText().equals("") ? WindowDefaultConfig.maxThreads : Integer.parseInt(maxThreads.getText()));
+        configPersistence.stopWhenSuccess = stopWhenSuccess.isSelected();
+        configPersistence.enableMultithreading = enableMultithreading.isSelected();
+        configPersistence.noExecution = noExecution.isSelected();
+        configPersistence.remind_compile = compileReminder.isSelected();
+        configPersistence.remind_regenerate = regenerateReminder.isSelected();
+        configPersistence.remind_repair = repairReminder.isSelected();
+        configPersistence.notifyRepair=notifyRepair.getSelectedIndex();
+        //持久化project级别的config配置
+        ProjectConfigFileUtil.modifyPersistence(configPersistence,new File(directory_static,fileName_static));//TODO:更新loadstate方法，参数为一个configPersistence对象
 
-        /*WindowConfig.apiKeys = apikey.getText().split(",");
+        WindowConfig.apiKeys = apikey.getText().split(",");
         WindowConfig.hostname = hostname.getText();
         WindowConfig.port = (port.getText().equals("") ? null : (port.getText()));
         WindowConfig.testNumber = (testNumber.getText().equals("") ? WindowDefaultConfig.testNumber : Integer.parseInt(testNumber.getText()));
@@ -123,8 +147,7 @@ public class SettingPanel extends JFrame {
         WindowConfig.repairReminder = repairReminder.isSelected();
         WindowConfig.regenerateReminder = regenerateReminder.isSelected();
         WindowConfig.notifyRepair = notifyRepair.getSelectedIndex();
-        WindowConfig.test_specification=specification.isSelected();
-        fillPanelInfoByConfig();*/
+        fillPanelInfoByConfig();
     }
 
     public void fillPanelInfoByConfig() {
@@ -240,11 +263,7 @@ public class SettingPanel extends JFrame {
         label24 = new JLabel();
         notifyRepair = new JComboBox<>();
         label20=new JLabel();
-        //specification
-        separator3 = new JSeparator();
-        label25 = new JLabel();
-        specification = new JCheckBox();
-        setTitle("ChatUniTest config");
+        setTitle("ChatUniTest config(Current Project)");
         //======== panel5 ========
         {
             panel5.setLayout(new MigLayout(
@@ -317,7 +336,7 @@ public class SettingPanel extends JFrame {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                SettingPanel.this.windowClosing(e);
+                ProjectSettingPanel.this.windowClosing(e);
             }
         });
         var contentPane = getContentPane();
@@ -618,14 +637,6 @@ public class SettingPanel extends JFrame {
                     "Never"
             }));
             panel2.add(notifyRepair, "cell 3 2");
-
-            //specification相关
-            panel2.add(separator3, "cell 2 3 3 1");
-
-            //---- label25 ----
-            label25.setText("Test Specification:");
-            panel2.add(label25, "cell 2 4");
-            panel2.add(specification, "cell 3 4,aligny center,growy 0");
         }
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
@@ -689,10 +700,6 @@ public class SettingPanel extends JFrame {
     private JLabel label24;
     private JComboBox<String> notifyRepair;
     private JLabel label20;
-    //specification相关panel
-    private JSeparator separator3;
-    private JLabel label25;
-    private JCheckBox specification;
 
     private void mouseClickButton1(MouseEvent e) {
         SwingUtilities.invokeLater(() -> {
@@ -813,8 +820,5 @@ public class SettingPanel extends JFrame {
 
         revalidate();
         repaint();
-    }
-    public static void main(String[] args) {
-        new SettingPanel().setVisible(true);
     }
 }

@@ -4,6 +4,7 @@ import java.nio.file.Path;
 
 //默认的config信息
 public class WindowDefaultConfig {
+    public static String apiKeys="";
     public static boolean enableMultithreading=false;
     public static String tmpOutput="/tmp/chatunitest-info";
     public static String testOutput="chatunitest";
@@ -20,8 +21,11 @@ public class WindowDefaultConfig {
     public static int frequencyPenalty=0;
     public static int presencePenalty=0;
     public static String proxy;
+    public static String port="";
+    public static String hostname="";
     public static String[] models={"gpt-3.5-turbo","gpt-4"};
     public static Boolean compileReminder=true;
-    public static Boolean regenerateReminder=true;
+    public static Boolean regenerateReminder=false;//不自动开始下一个round
     public static Boolean repairReminder=true;
+    public static Integer notifyRepair=0;//默认Always notify repair process
 }
