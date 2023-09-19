@@ -19,16 +19,15 @@ import java.nio.file.Paths;
 import java.util.concurrent.CompletableFuture;
 
 public class MethodTestGeneration {
-    public static void generate_method_test(Config config, String fullClassName, String methodName) {
+    public static void generate_method_test(Config config, String fullClassName, String simpleClassName,String methodName) {
         ApplicationManager.getApplication().executeOnPooledThread(()->{
             Project project = config.project;
             ApplicationManager.getApplication().invokeLater(()->{
                 LoggerUtil.info(project, "[ChatUniTest] Generating tests for project: " + project.getName());
             });
-            //todo:用户得可以中断生成，要不然一直跑
             try {
                 ApplicationManager.getApplication().invokeLater(()->{
-                    LoggerUtil.info(project, "[ChatUniTest] Generating tests for class:  " + fullClassName
+                    LoggerUtil.info(project, "[ChatUniTest] Generating tests for class:  " + simpleClassName
                             + ", method: " + methodName);
                 });
                 ClassRunner classRunner = new ClassRunner(fullClassName, config);

@@ -73,8 +73,14 @@
                     relative-to-action="org.intellij.sdk.action.PopupDialogAction"/>
             <action
                     class="zju.cst.aces.actions.ConfigSettingAction"
-                    id="zju.cst.aces.actions.ConfigSettingAction"
-                    text="Config"
+                    id="zju.cst.aces.actions.ConfigSettingAction_global"
+                    text="Global Configuration"
+                    description="ChatUniTest Configuration">
+            </action>
+            <action
+                    class="zju.cst.aces.actions.ProjectConfigSettingAction"
+                    id="zju.cst.aces.actions.ConfigSettingAction_project"
+                    text="Project Configuration"
                     description="ChatUniTest Configuration">
             </action>
         </group>

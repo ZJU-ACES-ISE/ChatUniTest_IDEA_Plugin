@@ -34,7 +34,6 @@ public class ProjectTestGeneration {
 
                 ProjectParser parser = new ProjectParser(config);
                 parser.parse();
-                LoggerUtil.info(project, "[ChatUniTest] Project parse finished");
                 LoggerUtil.info(project, "[ChatUniTest] Generating tests for project: " + project.getName());
 //                LoggerUtil.warn(project, "[ChatUniTest] It may consume a significant number of tokens!");
 
@@ -56,13 +55,13 @@ public class ProjectTestGeneration {
                             className = getFullClassName(className, config);
                             String finalClassName = className;
                             ApplicationManager.getApplication().invokeLater(() -> {
-                                LoggerUtil.info(project, "[ChatUniTest] Generating tests for class: " + finalClassName);
+                                LoggerUtil.info(project, "[ChatUniTest] Generating tests for class: " + getSimpleClassName(finalClassName));
                             });
                             new ClassRunner(className, config).start();
                         } catch (IOException e) {
                             String finalClassName1 = className;
                             ApplicationManager.getApplication().invokeLater(() -> {
-                                LoggerUtil.error(project, "[ChatUniTest] Generate tests for class " + finalClassName1 + " failed: " + e);
+                                LoggerUtil.error(project, "[ChatUniTest] Generate tests for class " + getSimpleClassName(finalClassName1) + " failed" );
                             });
                         }
                     }
@@ -94,10 +93,10 @@ public class ProjectTestGeneration {
                     String className = classPath.substring(classPath.lastIndexOf(File.separator) + 1, classPath.lastIndexOf("."));
                     try {
                         className = getFullClassName(className, config);
-                        LoggerUtil.info(config.project, "[ChatTester] Generating tests for class < " + className + " > ...");
+                        LoggerUtil.info(config.project, "[ChatTester] Generating tests for class  " + getSimpleClassName(className));
                         new ClassRunner(className, config).start();
                     } catch (IOException e) {
-                        LoggerUtil.error(config.project, "[ChatTester] Generate tests for class " + className + " failed: " + e);
+                        LoggerUtil.error(config.project, "[ChatTester] Generate tests for class " + getSimpleClassName(className) + " failed ");
                     }
                     return "Processed " + classPath;
                 }
@@ -146,6 +145,16 @@ public class ProjectTestGeneration {
             return true;
         }
         return false;
+    }
+
+    public static String getSimpleClassName(String fullClassName){
+        int lastIndexOfDot = fullClassName.lastIndexOf(".");
+        if(lastIndexOfDot==-1){
+            return fullClassName;
+        }
+        else {
+            return fullClassName.substring(lastIndexOfDot+1);
+        }
     }
 }
 

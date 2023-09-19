@@ -25,4 +25,5 @@ public class WindowConfig {
     public static Boolean compileReminder;
     public static Boolean regenerateReminder;
     public static Boolean repairReminder;
+    public static Integer notifyRepair;
 }

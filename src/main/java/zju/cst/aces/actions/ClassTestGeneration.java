@@ -18,7 +18,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class ClassTestGeneration {
 
-    public static void generate_class_test(Config config, String fullClassName) {
+    public static void generate_class_test(Config config, String fullClassName,String simpleClassName) {
         ApplicationManager.getApplication().executeOnPooledThread(()->{
             Project project = config.project;
             ProjectParser parser = new ProjectParser(config);
@@ -28,7 +28,7 @@ public class ClassTestGeneration {
 
             });
             ApplicationManager.getApplication().invokeLater(()->{
-                LoggerUtil.info(project, "[ChatUniTest] Generating tests for project: " + project.getName());
+                LoggerUtil.info(project, "[ChatUniTest] Generating tests for project: " + project.getName()+", class: "+simpleClassName);
             });
             try {
                 new ClassRunner(fullClassName, config).start();

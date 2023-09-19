@@ -69,7 +69,7 @@ public class MethodRunner extends ClassRunner {
             }
             executor.shutdown();
         } else {
-            if (WindowConfig.regenerateReminder == true) {
+            if (WindowConfig.regenerateReminder == false) {
                 for (int num = 1; num <= config.getTestNumber(); num++) {
                     if (num == 1) {
                         if (startRounds(num)) {
@@ -112,18 +112,24 @@ public class MethodRunner extends ClassRunner {
                 + classInfo.methodSignatures.get(methodInfo.methodSignature) + separator + num + separator + "Test";
         String fullTestName = fullClassName + separator + methodInfo.methodName + separator
                 + classInfo.methodSignatures.get(methodInfo.methodSignature) + separator + num + separator + "Test";
-        LoggerUtil.info(config.project, "[ChatTester] Generating test for method < "
-                + methodInfo.methodName + " > number " + num + "...\n");
+        LoggerUtil.info(config.project, "[Generating] Generating test for method "
+                + methodInfo.methodName + " round " + num );
         for (int rounds = 1; rounds <= config.getMaxRounds(); rounds++) {
             if (promptInfo == null) {
-                LoggerUtil.info(config.project, "Generating test for method  " + methodInfo.methodName + "  round " + rounds + " ...");
+//                LoggerUtil.info(config.project, "Generating test for method  " + methodInfo.methodName + "  round " + rounds );
                 if (methodInfo.dependentMethods.size() > 0) {
                     promptInfo = generatePromptInfoWithDep(classInfo, methodInfo);
                 } else {
                     promptInfo = generatePromptInfoWithoutDep(classInfo, methodInfo);
                 }
             } else {
-                LoggerUtil.info(config.project, ("Fixing test for method  " + methodInfo.methodName + "  round " + rounds + " ..."));
+                if(WindowConfig.notifyRepair==0){
+                    LoggerUtil.info(config.project, ("[Repairing] Fixing test for method  " + methodInfo.methodName + "  ,round " + rounds ));
+                }
+                else if(WindowConfig.notifyRepair==1&&rounds==2){
+                    LoggerUtil.info(config.project, ("[Repairing] Fixing test for method  "+ methodInfo.methodName));
+                }
+//                LoggerUtil.info(config.project, ("[Repairing] Fixing test for method  " + methodInfo.methodName + "  round " + rounds ));
             }
             List<Message> prompt = generateMessages(promptInfo);
 //            config.getLog().debug("[Prompt]:\n" + prompt.toString());
@@ -147,7 +153,9 @@ public class MethodRunner extends ClassRunner {
             boolean compileResult = compiler.compileTest(testName,
                     errorOutputPath.resolve(testName + "_CompilationError_" + rounds + ".txt"), promptInfo, fullClassName);
             if (!compileResult) {
-                LoggerUtil.info(config.project, "Test for method  " + methodInfo.methodName + "  compilation failed");
+                if(WindowConfig.notifyRepair==0){
+                    LoggerUtil.info(config.project, "Test for method  " + methodInfo.methodName + "  compilation failed");
+                }
                 if (config.getRepair_record() == 0) {
                     if (!continueRepairPanel()) {
                         return true;
@@ -164,10 +172,15 @@ public class MethodRunner extends ClassRunner {
             }
             if (compiler.executeTest(fullTestName, errorOutputPath.resolve(testName + "_ExecutionError_" + rounds + ".txt"), promptInfo)) {
                 exportTest(code, savePath);
-                LoggerUtil.info(config.project, "Test for method  " + methodInfo.methodName + "  generated successfully");
+                LoggerUtil.info(config.project, "[Success]Test for method  " + methodInfo.methodName + "  generated successfully");
                 return true;
             } else {
-                LoggerUtil.info(config.project, "Test for method  " + methodInfo.methodName + "  execution failed");
+                if(WindowConfig.notifyRepair==0){
+                    LoggerUtil.info(config.project, "Test for method  " + methodInfo.methodName + "  execution failed");
+                }
+                if(rounds==config.getMaxRounds()&&num==config.getTestNumber()){
+                    LoggerUtil.warn(config.project, "Test for method  " + methodInfo.methodName + "  generate failed");
+                }
                 if(WindowConfig.repairReminder==true){
                     if (config.getRepair_record() == 0) {
                         if (!continueRepairPanel()) {
@@ -218,10 +231,8 @@ public class MethodRunner extends ClassRunner {
         });
         try {
             if (completableFuture.get() == 1) {
-                System.out.println("go on doing");
                 return true;
             } else {
-                System.out.println("stop");
                 return false;
             }
         } catch (InterruptedException e) {
@@ -238,7 +249,6 @@ public class MethodRunner extends ClassRunner {
             repairPanel.getOkButton().addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    System.out.println("repair");
                     if (repairPanel.getCheckBox1().isSelected()) {
                         config.setRepair_record(1);//标志着记录了第一个按钮，repair
                     }
@@ -249,7 +259,6 @@ public class MethodRunner extends ClassRunner {
             repairPanel.getCancelButton().addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    System.out.println("cancel");
                     if (repairPanel.getCheckBox1().isSelected()) {
                         config.setRepair_record(2);//标志着记录了第二个按钮，cancel repair
                     }
@@ -268,10 +277,8 @@ public class MethodRunner extends ClassRunner {
         });
         try {
             if (completableFuture.get() == 1) {
-                System.out.println("repair");
                 return true;
             } else {
-                System.out.println("do not repair");
                 return false;
             }
         } catch (InterruptedException e) {

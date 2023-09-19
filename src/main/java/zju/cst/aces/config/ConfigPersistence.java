@@ -46,5 +46,6 @@ public class ConfigPersistence implements PersistentStateComponent<ConfigPersist
         public Boolean remind_regenerate;
         public Boolean remind_repair;
         public Boolean remind_compile;
+        public Integer notifyRepair;
     }
 }

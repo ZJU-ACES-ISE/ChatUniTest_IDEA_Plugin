@@ -2,17 +2,18 @@ package zju.cst.aces.actions;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import zju.cst.aces.Windows.Panels.ProjectSettingPanel;
 import zju.cst.aces.Windows.Panels.SettingPanel;
-import zju.cst.aces.Windows.Panels.SettingPanel1;
 
-public class ConfigSettingAction extends AnAction {
+public class ProjectConfigSettingAction extends AnAction {
+
     /**
-     * 全局配置持久化
+     * 项目级别的配置，只针对当前项目有效
      * @param event Carries information on the invocation place
      */
     @Override
     public void actionPerformed(AnActionEvent event) {
-        SettingPanel settingPanel = new SettingPanel();
-        settingPanel.show();
+        ProjectSettingPanel projectSettingPanel = new ProjectSettingPanel(event);
+        projectSettingPanel.show();
     }
 }
