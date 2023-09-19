@@ -46,6 +46,7 @@ public class SettingPanel extends JFrame {
         Boolean remind_regenerate_per=ideaConfiguration.remind_regenerate;
         Boolean remind_compile_per=ideaConfiguration.remind_compile;
         Integer notifyRepair_per=ideaConfiguration.notifyRepair;
+        Boolean test_specification= ideaConfiguration.test_specification;
         apikey.setText(apiKeys_per!=null?String.join(",",apiKeys_per):"");
         hostname.setText(hostname_per!=null?hostname_per:"");
         port.setText(port_per!=null?port_per:"");
@@ -68,6 +69,7 @@ public class SettingPanel extends JFrame {
         regenerateReminder.setSelected(remind_regenerate_per!=null?remind_regenerate_per:WindowDefaultConfig.regenerateReminder);
         repairReminder.setSelected(remind_repair_per!=null?remind_repair_per:WindowDefaultConfig.repairReminder);
         notifyRepair.setSelectedIndex(notifyRepair_per!=null?notifyRepair_per:WindowDefaultConfig.notifyRepair);
+        specification.setSelected(test_specification!=null?test_specification:true);
         //replace name
         confirm();
     }
@@ -96,9 +98,10 @@ public class SettingPanel extends JFrame {
         ideaConfiguration.remind_regenerate = regenerateReminder.isSelected();
         ideaConfiguration.remind_repair = repairReminder.isSelected();
         ideaConfiguration.notifyRepair=notifyRepair.getSelectedIndex();
+        ideaConfiguration.test_specification=specification.isSelected();
         configPersistence.loadState(ideaConfiguration);//更新持久化
 
-        WindowConfig.apiKeys = apikey.getText().split(",");
+        /*WindowConfig.apiKeys = apikey.getText().split(",");
         WindowConfig.hostname = hostname.getText();
         WindowConfig.port = (port.getText().equals("") ? null : (port.getText()));
         WindowConfig.testNumber = (testNumber.getText().equals("") ? WindowDefaultConfig.testNumber : Integer.parseInt(testNumber.getText()));
@@ -120,7 +123,8 @@ public class SettingPanel extends JFrame {
         WindowConfig.repairReminder = repairReminder.isSelected();
         WindowConfig.regenerateReminder = regenerateReminder.isSelected();
         WindowConfig.notifyRepair = notifyRepair.getSelectedIndex();
-        fillPanelInfoByConfig();
+        WindowConfig.test_specification=specification.isSelected();
+        fillPanelInfoByConfig();*/
     }
 
     public void fillPanelInfoByConfig() {
@@ -236,6 +240,10 @@ public class SettingPanel extends JFrame {
         label24 = new JLabel();
         notifyRepair = new JComboBox<>();
         label20=new JLabel();
+        //specification
+        separator3 = new JSeparator();
+        label25 = new JLabel();
+        specification = new JCheckBox();
         setTitle("ChatUniTest config");
         //======== panel5 ========
         {
@@ -610,6 +618,14 @@ public class SettingPanel extends JFrame {
                     "Never"
             }));
             panel2.add(notifyRepair, "cell 3 2");
+
+            //specification相关
+            panel2.add(separator3, "cell 2 3 3 1");
+
+            //---- label25 ----
+            label25.setText("Test Specification:");
+            panel2.add(label25, "cell 2 4");
+            panel2.add(specification, "cell 3 4,aligny center,growy 0");
         }
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
@@ -673,6 +689,10 @@ public class SettingPanel extends JFrame {
     private JLabel label24;
     private JComboBox<String> notifyRepair;
     private JLabel label20;
+    //specification相关panel
+    private JSeparator separator3;
+    private JLabel label25;
+    private JCheckBox specification;
 
     private void mouseClickButton1(MouseEvent e) {
         SwingUtilities.invokeLater(() -> {

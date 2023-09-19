@@ -8,7 +8,7 @@ import org.jetbrains.annotations.Nullable;
 
 @State(
         name = "ConfigPersistence",
-        storages = {@Storage("ConfigPersistence.xml")}
+        storages = {@Storage("ConfigPersistence_specification.xml")}
 )
 public class ConfigPersistence implements PersistentStateComponent<ConfigPersistence.IdeaConfiguration> {
     private IdeaConfiguration myConfig = new IdeaConfiguration();
@@ -47,5 +47,6 @@ public class ConfigPersistence implements PersistentStateComponent<ConfigPersist
         public Boolean remind_repair;
         public Boolean remind_compile;
         public Integer notifyRepair;
+        public Boolean test_specification;
     }
 }

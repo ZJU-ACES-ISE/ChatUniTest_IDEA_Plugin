@@ -6,6 +6,7 @@ import com.intellij.openapi.compiler.CompilerManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.util.Computable;
+import com.intellij.psi.*;
 import org.jetbrains.annotations.NotNull;
 import zju.cst.aces.Windows.Panels.ProjectSettingPanel;
 import zju.cst.aces.Windows.Panels.SettingPanel;
@@ -26,10 +27,6 @@ import com.intellij.openapi.fileTypes.FileTypeRegistry;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiJavaFile;
-import com.intellij.psi.PsiMethod;
 import com.intellij.psi.util.PsiTreeUtil;
 import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.utils.actions.MavenActionUtil;
@@ -244,12 +241,64 @@ public class ChatUniTestPluginAction extends AnAction {
                     String simpleClassName = virtualFile.getNameWithoutExtension();
                     return new String[]{fcName, simpleClassName};
                 });
-                String methodName = JudgeUtil.getMethodName(event);
-                MethodTestGeneration.generate_method_test(config, fullClassName[0], fullClassName[1], methodName);
+                //获取方法体
+
+                PsiFileInfo psiFileInfo=application.runReadAction((Computable<PsiFileInfo>)()->{
+                    Editor editor = event.getData(CommonDataKeys.EDITOR);
+                    PsiFile psiFile = event.getData(CommonDataKeys.PSI_FILE);
+                    int offset = editor.getCaretModel().getOffset();
+                    PsiElement element = psiFile.findElementAt(offset);
+                    PsiMethod containingMethod = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
+                    String methodName = JudgeUtil.getMethodName(event);
+                    String methodBody=containingMethod.getText();
+                    PsiImportList importList = PsiTreeUtil.getChildOfType(psiFile, PsiImportList.class);
+                    PsiFileInfo info = new PsiFileInfo(methodName,methodBody,importList);
+                    return info;
+                } );
+
+                MethodTestGeneration.generate_method_test(config, fullClassName[0], fullClassName[1],
+                        psiFileInfo.getMethodName(),psiFileInfo.getMethodBody(), psiFileInfo.getImportList());
             }
         });
     }
+    public class PsiFileInfo {
+        private String methodName;
+        private String methodBody;
+        private PsiImportList importList;
 
+        public PsiFileInfo(String methodName, String methodBody, PsiImportList importList) {
+            this.methodName = methodName;
+            this.methodBody = methodBody;
+            this.importList = importList;
+        }
+
+        public PsiFileInfo() {
+        }
+
+        public String getMethodName() {
+            return methodName;
+        }
+
+        public void setMethodName(String methodName) {
+            this.methodName = methodName;
+        }
+
+        public String getMethodBody() {
+            return methodBody;
+        }
+
+        public void setMethodBody(String methodBody) {
+            this.methodBody = methodBody;
+        }
+
+        public PsiImportList getImportList() {
+            return importList;
+        }
+
+        public void setImportList(PsiImportList importList) {
+            this.importList = importList;
+        }
+    }
     /*插件初始化时，设置插件按钮的可见性*/
     @Override
     public void update(AnActionEvent event) {
@@ -332,7 +381,6 @@ public class ChatUniTestPluginAction extends AnAction {
     public void loadPersistentConfig(int mode,Path persistenceXmlPath) {
         //项目级别
         if(mode==1){
-
             ProjectConfigPersistence projectConfigPersistence = ProjectConfigFileUtil.loadProjectConfig(persistenceXmlPath.toFile().getPath());
             WindowConfig.apiKeys=projectConfigPersistence.apiKeys;
             WindowConfig.enableMultithreading=projectConfigPersistence.enableMultithreading;
@@ -382,6 +430,7 @@ public class ChatUniTestPluginAction extends AnAction {
             Boolean regenerateReminder = ideaConfiguration.remind_regenerate;
             Boolean compileReminder = ideaConfiguration.remind_compile;
             Integer notifyRepair_per = ideaConfiguration.notifyRepair;
+            Boolean test_specification_per=ideaConfiguration.test_specification;
             WindowConfig.apiKeys = apiKeys_per;
             WindowConfig.hostname = hostname_per != null ? hostname_per : "";
             WindowConfig.port = port_per != null ? port_per : "";
@@ -404,7 +453,7 @@ public class ChatUniTestPluginAction extends AnAction {
             WindowConfig.repairReminder = repairReminder;
             WindowConfig.regenerateReminder = regenerateReminder;
             WindowConfig.notifyRepair = notifyRepair_per;
-            System.out.println("global config setting");
+            WindowConfig.test_specification=test_specification_per;
         }
     }
 }

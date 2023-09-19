@@ -63,8 +63,9 @@ public class PromptDefineAction extends AnAction {
                 dialog1.setCodeInput(content);
                 dialog1.show();
                 if (dialog1.getExitCode() == DialogWrapper.OK_EXIT_CODE) {
-                    System.out.println("modified code:\n"+dialog1.getCodeInput());
+                    System.out.println("specification code:\n"+dialog1.getCodeInput());
                 }
+
             }
         });
 
@@ -137,7 +138,6 @@ public class PromptDefineAction extends AnAction {
         WindowConfig.noExecution = noExecution_per;
     }
 }
-
 class CodeInputDialog extends DialogWrapper {
     private JTextArea codeTextArea;
     private JScrollPane scrollPane; // 声明 scrollPane 为成员变量
@@ -158,11 +158,12 @@ class CodeInputDialog extends DialogWrapper {
         init();
     }
 
+
     @NotNull
     @Override
     protected JComponent createCenterPanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.add(new JLabel("Enter your code:"), BorderLayout.NORTH);
+//        panel.add(new JLabel("Enter your code:"), BorderLayout.NORTH);
 
         // 将 codeTextArea 添加到面板
         panel.add(scrollPane, BorderLayout.CENTER); // 使用之前声明的 scrollPane
@@ -176,5 +177,21 @@ class CodeInputDialog extends DialogWrapper {
 
     public void setCodeInput(String code) {
         codeTextArea.setText(code);
+    }
+
+    public JTextArea getCodeTextArea() {
+        return codeTextArea;
+    }
+
+    public void setCodeTextArea(JTextArea codeTextArea) {
+        this.codeTextArea = codeTextArea;
+    }
+
+    public JScrollPane getScrollPane() {
+        return scrollPane;
+    }
+
+    public void setScrollPane(JScrollPane scrollPane) {
+        this.scrollPane = scrollPane;
     }
 }
