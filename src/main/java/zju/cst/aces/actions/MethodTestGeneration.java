@@ -9,6 +9,7 @@ import okhttp3.Response;
 import org.apache.commons.lang.StringUtils;
 import zju.cst.aces.Windows.WindowConfig;
 import zju.cst.aces.dto.Message;
+import zju.cst.aces.dto.RecordInfo;
 import zju.cst.aces.parser.ProjectParser;
 import zju.cst.aces.runner.AbstractRunner;
 import zju.cst.aces.util.AskGPT;
@@ -21,13 +22,16 @@ import zju.cst.aces.dto.MethodInfo;
 import zju.cst.aces.runner.ClassRunner;
 import zju.cst.aces.runner.MethodRunner;
 import zju.cst.aces.utils.LoggerUtil;
+import zju.cst.aces.utils.ProcessRecordUtil;
 import zju.cst.aces.utils.UpdateGitignoreUtil;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -35,12 +39,21 @@ import java.util.concurrent.ExecutionException;
 import static zju.cst.aces.runner.AbstractRunner.GSON;
 
 public class MethodTestGeneration {
+    public static RecordInfo recordInfo;
     public static void generate_method_test(Config config, String fullClassName, String simpleClassName,
                                             String methodName, String methodBody, PsiImportList importList) {
         ApplicationManager.getApplication().executeOnPooledThread(()->{
-            /*CompletableFuture<Boolean> specificationFuture = new CompletableFuture<>();
-            if(WindowConfig.test_specification){
+            CompletableFuture<Boolean> specificationFuture = new CompletableFuture<>();
+            //记录下的生成过程中的信息
+            recordInfo=new RecordInfo();
+            if(WindowConfig.test_specification==true){
                 ApplicationManager.getApplication().invokeLater(()->{
+                    //用时间戳做唯一标识
+                    long timestamp = System.currentTimeMillis();
+                    // 将时间戳格式化为可读的字符串
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd, HH:mm:ss");
+                    String formattedTime = dateFormat.format(new Date(timestamp));
+                    recordInfo.setCreateTime(formattedTime);
                     //test specification部分
                     String input_code="";
                     if(importList!=null){
@@ -50,6 +63,7 @@ public class MethodTestGeneration {
                         }
                     }
                     input_code+=methodBody;
+                    recordInfo.setMethodInfo(methodBody.replaceAll("\\n","\n"));
                     AskGPT askGPT = new AskGPT(config);
                     ArrayList<Message> messages = new ArrayList<>();
                     Message message = new Message();
@@ -68,6 +82,7 @@ public class MethodTestGeneration {
                     specificationDialog.show();
                     if (specificationDialog.getExitCode() == DialogWrapper.OK_EXIT_CODE) {
                         String specificationCode = specificationDialog.getCodeInput();
+                        recordInfo.setSpecification(specificationCode.replaceAll("\\n","\n"));
                         //用户删除了所有内容，或者gpt提示不需要specification
                         if("".equals(StringUtils.deleteWhitespace(specificationCode))||specificationCode.toLowerCase().contains("no need")){
                             config.setUse_specification(false);
@@ -81,6 +96,8 @@ public class MethodTestGeneration {
                     }
                     specificationFuture.complete(true);
                 });
+            }else {
+                specificationFuture.complete(true);
             }
             try {
                 specificationFuture.get();
@@ -88,8 +105,8 @@ public class MethodTestGeneration {
                 throw new RuntimeException(e);
             } catch (ExecutionException e) {
                 throw new RuntimeException(e);
-            }*/
-            //正常执行
+            }
+            //正常执行不使用specification的代码
             Project project = config.project;
             ApplicationManager.getApplication().invokeLater(()->{
                 LoggerUtil.info(project, "[ChatUniTest] Generating tests for project: " + project.getName());
@@ -129,6 +146,10 @@ public class MethodTestGeneration {
                         UpdateGitignoreUtil.removeFromFile(file);
                     }
                 });
+                //将生成过程中的相关信息保存（specification）
+                if(WindowConfig.test_specification==true) {
+                    ProcessRecordUtil.recordProcess(config.testOutput.toString(),"record",fullClassName,methodName,recordInfo);
+                }
                 LoggerUtil.info(project, "[ChatUniTest] Generation finished");
             });
             FileUtil.refreshFolder(config.testOutput);

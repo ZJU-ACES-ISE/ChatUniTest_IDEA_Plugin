@@ -46,7 +46,6 @@ public class UpdateGitignoreUtil {
                 }
                 writer.close();
             } else {
-                System.out.println("All patterns already exist in .gitignore.");
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -84,9 +83,7 @@ public class UpdateGitignoreUtil {
                     writer.write(updatedLine + System.lineSeparator());
                 }
                 writer.close();
-                System.out.println("Patterns removed from .gitignore.");
             } else {
-                System.out.println("Patterns not found in .gitignore.");
             }
         } catch (IOException e) {
             e.printStackTrace();

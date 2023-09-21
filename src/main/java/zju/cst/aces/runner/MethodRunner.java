@@ -8,6 +8,7 @@ import okhttp3.Response;
 import zju.cst.aces.Windows.Panels.RegeneratePanel;
 import zju.cst.aces.Windows.Panels.RepairPanel;
 import zju.cst.aces.Windows.WindowConfig;
+import zju.cst.aces.actions.MethodTestGeneration;
 import zju.cst.aces.config.Config;
 import zju.cst.aces.dto.Message;
 import zju.cst.aces.dto.MethodInfo;
@@ -173,6 +174,7 @@ public class MethodRunner extends ClassRunner {
             if (compiler.executeTest(fullTestName, errorOutputPath.resolve(testName + "_ExecutionError_" + rounds + ".txt"), promptInfo)) {
                 exportTest(code, savePath);
                 LoggerUtil.info(config.project, "[Success]Test for method  " + methodInfo.methodName + "  generated successfully");
+                MethodTestGeneration.recordInfo.setResultTest(code);
                 return true;
             } else {
                 if(WindowConfig.notifyRepair==0){

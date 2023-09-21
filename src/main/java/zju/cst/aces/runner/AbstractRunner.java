@@ -3,6 +3,7 @@ package zju.cst.aces.runner;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import okhttp3.Response;
+import zju.cst.aces.actions.MethodTestGeneration;
 import zju.cst.aces.dto.*;
 import zju.cst.aces.parser.ClassParser;
 import zju.cst.aces.util.CodeExtractor;
@@ -99,7 +100,7 @@ public class AbstractRunner {
                             " You can use Junit 5 and reflection. No explanation is needed.\n",
                     promptInfo.unitTest, processedErrorMsg, promptInfo.methodSignature, promptInfo.className, promptInfo.info);
         }
-        //todo:保存至json文件
+        MethodTestGeneration.recordInfo.setPrompt(user.replaceAll("\\n","\n"));
         return user;
     }
 
@@ -142,7 +143,6 @@ public class AbstractRunner {
                     "compile without errors, and use reflection to invoke private methods. " +
                     "No additional explanations required.\n";
         }
-
         return system;
     }
 

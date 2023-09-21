@@ -70,7 +70,7 @@ public class ProjectConfigFileUtil {
         Document document = null;
         try {
             document = saxReader.read(file);
-        } catch (DocumentException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
         Element rootElement = document.getRootElement();
