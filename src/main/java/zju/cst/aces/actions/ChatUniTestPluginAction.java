@@ -37,6 +37,8 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -230,10 +232,16 @@ public class ChatUniTestPluginAction extends AnAction {
             if (basePath.equals(virtualFile.getPath())) {
                 ProjectTestGeneration.generate_project_test(config);
             } else if (virtualFile.getFileType() == FileTypeManager.getInstance().getFileTypeByExtension("java") && !isMouseOnMethod(event)) {
-                PsiJavaFile psiJavaFile = (PsiJavaFile) event.getData(CommonDataKeys.PSI_FILE);
-                String fullClassName = String.format("%s.%s", psiJavaFile.getPackageName(), virtualFile.getNameWithoutExtension());
-                String simpleClassName = virtualFile.getNameWithoutExtension();
-                ClassTestGeneration.generate_class_test(config, fullClassName, simpleClassName);
+                HashMap<String,String> resultMap=application.runReadAction((Computable<HashMap<String, String>>)()->{
+                    HashMap<String, String> map = new HashMap<>();
+                    PsiJavaFile psiJavaFile = (PsiJavaFile) event.getData(CommonDataKeys.PSI_FILE);
+                    String fullClassName = String.format("%s.%s", psiJavaFile.getPackageName(), virtualFile.getNameWithoutExtension());
+                    String simpleClassName = virtualFile.getNameWithoutExtension();
+                    map.put("fullClassName",fullClassName);
+                    map.put("simpleClassName",simpleClassName);
+                    return map;
+                });
+                ClassTestGeneration.generate_class_test(config, resultMap.get("fullClassName"), resultMap.get("simpleClassName"));
             } else if (isMouseOnMethod(event)) {
                 String[] fullClassName = application.runReadAction((Computable<String[]>) () -> {
                     PsiJavaFile psiJavaFile = (PsiJavaFile) event.getData(CommonDataKeys.PSI_FILE);
@@ -392,6 +400,8 @@ public class ChatUniTestPluginAction extends AnAction {
             WindowConfig.minErrorTokens=projectConfigPersistence.minErrorTokens;
             WindowConfig.maxPromptTokens=projectConfigPersistence.maxPromptTokens;
             WindowConfig.model_index=projectConfigPersistence.model_index;
+            WindowConfig.testNumber=projectConfigPersistence.testNumber;
+            WindowConfig.maxRounds=projectConfigPersistence.maxRounds;
             WindowConfig.temperature=projectConfigPersistence.temperature;
             WindowConfig.topP=projectConfigPersistence.topP;
             WindowConfig.frequencyPenalty=projectConfigPersistence.frequencyPenalty;

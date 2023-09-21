@@ -10,15 +10,10 @@ public class UpdateGitignoreUtil {
     static String[] rule_array = {
             "chatunitest/",
             "tmp/",
+            "src/test/java/*_*_*_*_*.java",
             "src/main/java/*_*_*_*_*.java"
     };
-    public static void main(String[] args) {
-        Path path = Paths.get("D:\\idea_plugin\\chatunitest_plugin_idea", ".gitignore");
-        File file = path.toFile();
-        if(file.exists()){
-            addToFile(file);
-        }
-    }
+
     public static void addToFile(File gitignoreFile) {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(gitignoreFile));
@@ -47,7 +42,6 @@ public class UpdateGitignoreUtil {
                 for (String rule : rule_array) {
                     if (!lines.contains(rule)) {
                         writer.write(rule + System.lineSeparator());
-                        System.out.println("Pattern added to .gitignore: " + rule);
                     }
                 }
                 writer.close();

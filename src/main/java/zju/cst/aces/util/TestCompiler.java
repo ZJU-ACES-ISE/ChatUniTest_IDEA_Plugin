@@ -143,7 +143,8 @@ public class TestCompiler {
     public boolean getResult(String className, Path outputPath, PromptInfo promptInfo, String fullClassName) throws ExecutionException, InterruptedException {
         List<String> errorList = new ArrayList<>();
         Project project = config.getProject();
-        VirtualFile tempDir = project.getBaseDir().findFileByRelativePath("/src/main/java");
+        //将位置移动到src/test/java,使得能够使用scope='test'的依赖
+        VirtualFile tempDir = project.getBaseDir().findFileByRelativePath("/src/test/java");
         CompletableFuture<Boolean> compileFuture = new CompletableFuture<>();
         // Create a temporary Java file
         ApplicationManager.getApplication().invokeLater(() -> {
@@ -227,6 +228,9 @@ public class TestCompiler {
         }
         String outputDirectory = mavenProject.getOutputDirectory();
         classPaths.add(outputDirectory);
+        String outputTestDirectory=mavenProject.getTestOutputDirectory();
+        //v2.1,添加测试类目录到classPath，要不然execution的时候会找不到scope='test'的依赖
+        classPaths.add(outputTestDirectory);
         return classPaths;
     }
 

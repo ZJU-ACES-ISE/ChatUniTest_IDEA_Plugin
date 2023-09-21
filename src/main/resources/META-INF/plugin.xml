@@ -81,7 +81,7 @@
                     class="zju.cst.aces.actions.ProjectConfigSettingAction"
                     id="zju.cst.aces.actions.ConfigSettingAction_project"
                     text="Project Configuration"
-                    description="ChatUniTest Configuration">
+                    description="ChatUniTest Configuration(project)">
             </action>
         </group>
     </actions>

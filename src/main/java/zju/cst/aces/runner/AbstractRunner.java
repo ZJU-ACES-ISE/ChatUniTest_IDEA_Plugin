@@ -99,7 +99,6 @@ public class AbstractRunner {
                             " You can use Junit 5 and reflection. No explanation is needed.\n",
                     promptInfo.unitTest, processedErrorMsg, promptInfo.methodSignature, promptInfo.className, promptInfo.info);
         }
-        System.out.println("---------------------prompt----------------------\n"+user);
         //todo:保存至json文件
         return user;
     }
