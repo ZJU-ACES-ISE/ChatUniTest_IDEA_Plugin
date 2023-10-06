@@ -5,12 +5,15 @@ import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.externalSystem.model.ProjectSystemId;
+import com.intellij.openapi.externalSystem.service.project.ProjectDataManager;
 import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.util.PsiTreeUtil;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
@@ -22,6 +25,16 @@ public class JudgeUtil {
     public static boolean isMavenProject(Project project) {
         MavenProjectsManager mavenProjectsManager = MavenProjectsManager.getInstance(project);
         if (!mavenProjectsManager.hasProjects()) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean isMavenOrGradle(Project project){
+        PsiManager psiManager = PsiManager.getInstance(project);
+        VirtualFile pomFile = project.getBaseDir().findChild("pom.xml");
+        VirtualFile gradleFile = project.getBaseDir().findChild("build.gradle");
+        if(pomFile!=null||gradleFile!=null){
             return true;
         }
         return false;

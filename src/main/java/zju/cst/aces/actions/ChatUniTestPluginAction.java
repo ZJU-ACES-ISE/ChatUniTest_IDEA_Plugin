@@ -1,10 +1,12 @@
 package zju.cst.aces.actions;
 
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.compiler.CompileContext;
 import com.intellij.openapi.compiler.CompileStatusNotification;
 import com.intellij.openapi.compiler.CompilerManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
+import com.intellij.openapi.roots.CompilerModuleExtension;
 import com.intellij.openapi.util.Computable;
 import com.intellij.psi.*;
 import org.jetbrains.annotations.NotNull;
@@ -14,11 +16,8 @@ import zju.cst.aces.Windows.WindowConfig;
 import zju.cst.aces.Windows.WindowDefaultConfig;
 import zju.cst.aces.config.ConfigPersistence;
 import zju.cst.aces.config.ProjectConfigPersistence;
+import zju.cst.aces.util.TestCompiler;
 import zju.cst.aces.utils.*;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
@@ -38,6 +37,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -54,13 +54,37 @@ public class ChatUniTestPluginAction extends AnAction {
             Project project = event.getProject();
             String basePath = project.getBasePath();
             MavenProject mavenProject = MavenActionUtil.getMavenProject(event.getDataContext());
-            if (JudgeUtil.isMavenProject(project)) {
+            //找到当前的module
+            //todo:查看是否是gradle或者maven项目
+            //查看是否是maven或gradle项目
+            if (!JudgeUtil.isMavenOrGradle(project)) {
+                CompletableFuture<Integer> projectTypeFuture = new CompletableFuture<>();
                 application.invokeLater(() -> {
-                    Messages.showMessageDialog("Please use maven-archetype project", "Error", Messages.getErrorIcon());
+//                    Messages.showMessageDialog("Please use maven-archetype project", "Error", Messages.getErrorIcon());
+                    int result = Messages.showDialog(
+                            project,
+                            "Plugin is only available for maven and gradle projects",
+                            "Warning",
+                            new String[]{"Quit", "Continue"},
+                            0,
+                            Messages.getWarningIcon()
+                    );
+                    projectTypeFuture.complete(result);
                 });
-                return;
+                try {
+                    int result=projectTypeFuture.get();
+                    if(result==0){
+                        return;
+                    }
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                } catch (ExecutionException e) {
+                    throw new RuntimeException(e);
+                }
             }
+            /*
             CompletableFuture<Integer> dependencyFuture = new CompletableFuture<>();
+            //查看是否添加了完整依赖
             if (!DependencyChecker.hasDependencyWithGroupId(mavenProject, "io.github.ZJU-ACES-ISE", "chatunitest-starter")) {
                 application.invokeLater(() -> {
                     int result = Messages.showDialog(
@@ -83,7 +107,7 @@ public class ChatUniTestPluginAction extends AnAction {
                 } catch (ExecutionException e) {
                     throw new RuntimeException(e);
                 }
-            }
+            }*/
             //询问用户需要使用全局的配置还是项目级别的配置
             CompletableFuture<Integer> configFuture = new CompletableFuture<>();
             application.invokeLater(() -> {
@@ -145,7 +169,17 @@ public class ChatUniTestPluginAction extends AnAction {
                 });
             });
 
-            init(project, basePath, mavenProject);
+            Module currentModule=LangDataKeys.MODULE.getData(event.getDataContext());
+            init(project, basePath, mavenProject,currentModule);
+           /* //对比一下之前和新使用的listclasspath的区别
+            System.out.println("previous----------------------");
+            for (String listClassPath : TestCompiler.listClassPaths(mavenProject)) {
+                System.out.println(listClassPath);
+            }*/
+            /*System.out.println("now listClassPaths------------------------");
+            for (String listClassPath : TestCompiler.listClassPaths(project,currentModule)) {
+                System.out.println(listClassPath);
+            }*/
             if (!ConnectUtil.testOpenApiConnection(WindowConfig.apiKeys, WindowConfig.hostname, WindowConfig.port)) {
                 application.invokeLater(() -> {
                     Messages.showMessageDialog("Connect to OpenAI failed", "Error", Messages.getErrorIcon());
@@ -169,14 +203,15 @@ public class ChatUniTestPluginAction extends AnAction {
                             project,
                             "Insure the project has been compiled and parsed",
                             "Compile Confirm",
-                            new String[]{"Skip", "Compile"},
+                            new String[]{"Skip", "Compile With IDEA Compiler","Quit and compile on my way"},
                             0, // Default option (0: "Skip", 1: "Compile")
                             Messages.getWarningIcon()
                     );
                     compileDialogResult.complete(result);
                 });
                 try {
-                    if (compileDialogResult.get() == 1) {
+                    int result=compileDialogResult.get();
+                    if ( result== 1) {
                         CompletableFuture<Boolean> compileFuture = new CompletableFuture<>();
                         application.invokeLater(() -> {
                             compilerManager.compile(module, new CompileStatusNotification() {
@@ -203,6 +238,12 @@ public class ChatUniTestPluginAction extends AnAction {
                             throw new RuntimeException(e);
                         }
                     }
+                    else if(result==2){
+                        application.invokeLater(()->{
+                            LoggerUtil.info(project,"User performs interrupt operation");
+                        });
+                        return;
+                    }
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 } catch (ExecutionException e) {
@@ -211,26 +252,48 @@ public class ChatUniTestPluginAction extends AnAction {
             }
 
             //parse the project
-            ProjectParser parser = new ProjectParser(config);
-            CompletableFuture<Void> classRunnerTask = CompletableFuture.runAsync(() -> {
-                application.invokeLater(() -> {
-                    LoggerUtil.info(project, "[ChatUniTest] Parsing class info");
-                });
-                parser.parse();
+            CompletableFuture<Integer> parseFuture = new CompletableFuture<>();
+            application.invokeLater(() -> {
+                int result = Messages.showDialog(
+                        project,
+                        "After the project is updated, it needs to be reparsed ",
+                        "Parse Warning",
+                        new String[]{"Parse the project", "Skip"},
+                        0,
+                        Messages.getWarningIcon()
+                );
+                parseFuture.complete(result);
             });
             try {
-                classRunnerTask.get();
-                application.invokeLater(() -> {
-                    LoggerUtil.info(project, "[ChatUniTest] Project parse finished");
-                });
-            } catch (InterruptedException | ExecutionException e) {
-                application.invokeLater(() -> {
-                    LoggerUtil.info(project, "[ChatUniTest] Project parse failed");
-                });
+                int result=parseFuture.get();
+                if(result==0){
+                    ProjectParser parser = new ProjectParser(config,currentModule);
+                    CompletableFuture<Void> classRunnerTask = CompletableFuture.runAsync(() -> {
+                        application.invokeLater(() -> {
+                            LoggerUtil.info(project, "[ChatUniTest] Parsing class info");
+                        });
+                        parser.parse();
+                    });
+                    try {
+                        classRunnerTask.get();
+                        application.invokeLater(() -> {
+                            LoggerUtil.info(project, "[ChatUniTest] Project parse finished");
+                        });
+                    } catch (InterruptedException | ExecutionException e) {
+                        application.invokeLater(() -> {
+                            LoggerUtil.info(project, "[ChatUniTest] Project parse failed");
+                        });
+                        throw new RuntimeException(e);
+                    }
+                }
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            } catch (ExecutionException e) {
                 throw new RuntimeException(e);
             }
+            //判断是否能够调用插件
             if (basePath.equals(virtualFile.getPath())) {
-                ProjectTestGeneration.generate_project_test(config);
+                ProjectTestGeneration.generate_project_test(config,currentModule);
             } else if (virtualFile.getFileType() == FileTypeManager.getInstance().getFileTypeByExtension("java") && !isMouseOnMethod(event)) {
                 HashMap<String,String> resultMap=application.runReadAction((Computable<HashMap<String, String>>)()->{
                     HashMap<String, String> map = new HashMap<>();
@@ -360,7 +423,7 @@ public class ChatUniTestPluginAction extends AnAction {
         });
     }
 
-    public void init(Project project, String basePath, MavenProject mavenProject) {
+    public void init(Project project, String basePath, MavenProject mavenProject,Module currentModule) {
         config = new Config.ConfigBuilder()
                 .project(project)
                 .mavenProject(mavenProject)
@@ -382,7 +445,7 @@ public class ChatUniTestPluginAction extends AnAction {
                 .frequencyPenalty(WindowConfig.frequencyPenalty)
                 .presencePenalty(WindowConfig.presencePenalty)
                 .proxy((WindowConfig.hostname.equals("") || WindowConfig.port.equals("")) ? "null:-1" : String.format("%s:%s", WindowConfig.hostname, WindowConfig.port))
-                .others()
+                .others(project,currentModule)
                 .build();
     }
 

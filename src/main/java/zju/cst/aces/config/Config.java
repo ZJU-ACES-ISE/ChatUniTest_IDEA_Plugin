@@ -1,6 +1,7 @@
 package zju.cst.aces.config;
 
 import com.intellij.openapi.application.Application;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import lombok.Getter;
 import lombok.Setter;
@@ -136,8 +137,9 @@ public class Config {
                 .readTimeout(5, TimeUnit.MINUTES)
                 .build();
 
-        public ConfigBuilder others() {
-            this.classPaths = TestCompiler.listClassPaths(this.mavenProject);
+        public ConfigBuilder others(Project project, Module currentModule) {
+//            this.classPaths = TestCompiler.listClassPaths(this.mavenProject);
+            this.classPaths = TestCompiler.listClassPaths(project,currentModule);
             this.dependencyGraphBuilder = dependencyGraphBuilder;
             this.log = log;
             this.parseOutput = this.tmpOutput.resolve("class-info");

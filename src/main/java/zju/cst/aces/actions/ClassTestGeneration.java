@@ -21,12 +21,12 @@ public class ClassTestGeneration {
     public static void generate_class_test(Config config, String fullClassName,String simpleClassName) {
         ApplicationManager.getApplication().executeOnPooledThread(()->{
             Project project = config.project;
-            ProjectParser parser = new ProjectParser(config);
+            /*ProjectParser parser = new ProjectParser(config);
             parser.parse();
             ApplicationManager.getApplication().invokeLater(()->{
                 LoggerUtil.info(project, "[ChatUniTest] Parse finished");
 
-            });
+            });*/
             ApplicationManager.getApplication().invokeLater(()->{
                 LoggerUtil.info(project, "[ChatUniTest] Generating tests for project: " + project.getName()+", class: "+simpleClassName);
             });

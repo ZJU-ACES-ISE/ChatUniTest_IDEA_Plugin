@@ -3,6 +3,7 @@ package zju.cst.aces.actions;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.module.Module;
 import zju.cst.aces.utils.FileUtil;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.project.Project;
@@ -26,14 +27,15 @@ import java.util.concurrent.*;
 public class ProjectTestGeneration {
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
 
-    public static void generate_project_test(Config config) {
+    public static void generate_project_test(Config config, Module currentModule) {
         ApplicationManager.getApplication().executeOnPooledThread(()->{
             Project project = config.project;
             String basePath = config.basePath;
             CompletableFuture<Void> classTask=CompletableFuture.runAsync(()-> {
 
-                ProjectParser parser = new ProjectParser(config);
-                parser.parse();
+//                ProjectParser parser = new ProjectParser(config);
+                ProjectParser parser = new ProjectParser(config, currentModule);
+                /*parser.parse();*/
                 LoggerUtil.info(project, "[ChatUniTest] Generating tests for project: " + project.getName());
 //                LoggerUtil.warn(project, "[ChatUniTest] It may consume a significant number of tokens!");
 

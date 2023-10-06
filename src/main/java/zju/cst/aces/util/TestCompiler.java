@@ -1,18 +1,28 @@
 package zju.cst.aces.util;
 
+import com.intellij.compiler.CompilerManagerImpl;
 import com.intellij.compiler.CompilerMessageImpl;
+import com.intellij.ide.lightEdit.intentions.openInProject.GradleProjectRootFinder;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.application.TransactionGuard;
 import com.intellij.openapi.compiler.*;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.projectRoots.Sdk;
+import com.intellij.openapi.roots.*;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 
 import org.codehaus.plexus.util.FileUtils;
+import org.gradle.plugins.ide.internal.tooling.GradleProjectBuilder;
+import org.gradle.tooling.internal.gradle.GradleProjectIdentity;
+import org.gradle.tooling.model.GradleProject;
 import org.jetbrains.idea.maven.model.MavenArtifact;
 import org.jetbrains.idea.maven.project.MavenProject;
+import org.jetbrains.plugins.gradle.settings.GradleExtensionsSettings;
 import org.junit.platform.engine.TestEngine;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
@@ -46,6 +56,7 @@ import java.util.concurrent.ExecutionException;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 
 public class TestCompiler {
+
     public static File srcTestFolder = new File("src" + File.separator + "test" + File.separator + "java");
     public static File backupFolder = new File("src" + File.separator + "backup");
     public static Config config;
@@ -91,7 +102,6 @@ public class TestCompiler {
             // Register a listener to collect test execution results.
             SummaryGeneratingListener listener = new SummaryGeneratingListener();
             launcher.registerTestExecutionListeners(listener);
-
             LauncherDiscoveryRequest request = LauncherDiscoveryRequestBuilder.request()
                     .selectors(selectClass(classLoader.loadClass(fullTestName)))
                     .build();
@@ -159,9 +169,12 @@ public class TestCompiler {
                     throw new RuntimeException(e);
                 }
             });
-
+            Sdk projectSdk = ProjectRootManager.getInstance(project).getProjectSdk();
+            System.out.println("sdk "+projectSdk.getHomePath());
             CompilerManager compilerManager = CompilerManager.getInstance(project);
             VirtualFile[] filesToCompile = new VirtualFile[]{tempJavaFile};
+
+
             // 创建CompletableFuture对象来处理编译结果的回调
             compilerManager.compile(filesToCompile, new CompileStatusNotification() {
                 @Override
@@ -222,6 +235,7 @@ public class TestCompiler {
     }
 
     public static List<String> listClassPaths(MavenProject mavenProject) {
+        //针对maven项目
         List<String> classPaths = new ArrayList<>();
         for (MavenArtifact dependency : mavenProject.getDependencies()) {
             classPaths.add(dependency.getPath());
@@ -231,6 +245,46 @@ public class TestCompiler {
         String outputTestDirectory=mavenProject.getTestOutputDirectory();
         //v2.1,添加测试类目录到classPath，要不然execution的时候会找不到scope='test'的依赖
         classPaths.add(outputTestDirectory);
+        return classPaths;
+    }
+
+    public static List<String> listClassPaths(Project project,Module currentModule){
+        ArrayList<String> classPaths = new ArrayList<>();
+        //针对所有项目类型
+        Module[] modules = ModuleManager.getInstance(project).getModules();
+        for (Module module : modules) {
+            ModuleRootManager rootManager = ModuleRootManager.getInstance(module);
+            OrderEnumerator enumerator = rootManager.orderEntries();
+            enumerator.recursively().forEachLibrary(library -> {
+                VirtualFile[] files = library.getFiles(OrderRootType.CLASSES);
+                for (VirtualFile file : files) {
+                    // 获取 JAR 包的路径
+                    String jarPath = file.getPresentableUrl();
+                    classPaths.add(jarPath);
+                }
+                return true; // 继续遍历其他库
+            });
+        }
+            if (currentModule != null) {
+                // 获取编译模块扩展
+                CompilerModuleExtension extension = CompilerModuleExtension.getInstance(currentModule);
+                // 获取输出目录
+                VirtualFile outputDirectory = extension.getCompilerOutputPath();
+                if (outputDirectory != null) {
+                    String outputDirectoryPath = outputDirectory.getPath();
+                    classPaths.add(outputDirectoryPath);
+                    //先人为控制一下，暂时没找到合适的api
+                    //todo:更换获取输出目录的方法
+                    if(outputDirectoryPath.contains("main")){//表示是gradle项目（gradle与maven输出目录的区别在于是否包含main目录）
+                        classPaths.add(outputDirectoryPath.replace("main","test"));
+                    }
+                }
+                // 获取测试输出目录
+                VirtualFile testOutputDirectory = extension.getCompilerOutputPathForTests();
+                if (testOutputDirectory != null) {
+                    classPaths.add(testOutputDirectory.getPath());
+                }
+            }
         return classPaths;
     }
 

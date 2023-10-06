@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "com.hhh.plugin"
-version = "2.1-SNAPSHOT"
+version = "3.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -15,7 +15,7 @@ repositories {
 intellij {
     version.set("2022.1.4")
     type.set("IC") // Target IDE Platform
-    plugins.set(listOf("java","maven"))
+    plugins.set(listOf("java","maven","gradle"))
 }
 
 tasks {

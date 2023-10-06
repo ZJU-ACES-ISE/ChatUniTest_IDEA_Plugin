@@ -8,9 +8,14 @@ import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeS
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
-import org.apache.maven.project.DefaultProjectBuildingRequest;
-import org.apache.maven.project.ProjectBuildingRequest;
+import com.intellij.openapi.roots.CompilerModuleExtension;
+import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.roots.OrderEnumerator;
+import com.intellij.openapi.roots.OrderRootType;
+import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.maven.shared.dependency.graph.DependencyNode;
 import org.jetbrains.idea.maven.model.MavenArtifact;
 import org.jetbrains.idea.maven.project.MavenProject;
@@ -35,11 +40,20 @@ public class ProjectParser {
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
     public static Config config;
 
-    public ProjectParser(Config config) {
+    public ProjectParser() {
         this.srcFolderPath = Paths.get(config.project.getBasePath(), "src", "main", "java");
         this.config = config;
         this.outputPath = config.getParseOutput();
         JavaSymbolSolver symbolSolver = getSymbolSolver(config.mavenProject);
+        parser.getParserConfiguration().setSymbolResolver(symbolSolver);
+    }
+
+    public ProjectParser(Config config,Module module) {
+        this.srcFolderPath = Paths.get(config.project.getBasePath(), "src", "main", "java");
+        this.config = config;
+        this.outputPath = config.getParseOutput();
+//        JavaSymbolSolver symbolSolver = getSymbolSolver(config.mavenProject);
+        JavaSymbolSolver symbolSolver=getSymbolSolver(config.project,module);
         parser.getParserConfiguration().setSymbolResolver(symbolSolver);
     }
 
@@ -113,6 +127,7 @@ public class ProjectParser {
         }
     }
 
+    //todo:改进getSymbolSolver方法，适配所有项目
     private JavaSymbolSolver getSymbolSolver(MavenProject mavenProject) {
         CombinedTypeSolver combinedTypeSolver = new CombinedTypeSolver();
         combinedTypeSolver.add(new ReflectionTypeSolver());
@@ -133,7 +148,46 @@ public class ProjectParser {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        JavaSymbolSolver symbolSolver = new JavaSymbolSolver(combinedTypeSolver);
+        return symbolSolver;
+    }
 
+    private JavaSymbolSolver getSymbolSolver(Project project, Module currentModule) {
+        System.out.println("now projectParser_ClassPaths------------------------");
+        CombinedTypeSolver combinedTypeSolver = new CombinedTypeSolver();
+        combinedTypeSolver.add(new ReflectionTypeSolver());
+        ArrayList<String> classPaths = new ArrayList<>();
+        //针对所有项目类型
+        Module[] modules = ModuleManager.getInstance(project).getModules();
+            ModuleRootManager rootManager = ModuleRootManager.getInstance(currentModule);
+            OrderEnumerator enumerator = rootManager.orderEntries();
+            enumerator.recursively().forEachLibrary(library -> {
+                VirtualFile[] files = library.getFiles(OrderRootType.CLASSES);
+                for (VirtualFile file : files) {
+                    // 获取 JAR 包的路径
+                    String jarPath = file.getPresentableUrl();
+                    classPaths.add(jarPath);
+                }
+                return true; // 继续遍历其他库
+            });
+
+        for (String classPath : classPaths) {
+            try {
+                System.out.println(classPath);
+                combinedTypeSolver.add(new JarTypeSolver(new File(classPath)));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        if (currentModule != null) {
+            // 获取编译模块扩展
+            CompilerModuleExtension extension = CompilerModuleExtension.getInstance(currentModule);
+            // 获取输出目录
+            VirtualFile outputDirectory = extension.getCompilerOutputPath();
+            if (outputDirectory != null) {
+                combinedTypeSolver.add(new JavaParserTypeSolver(outputDirectory.getPath()));
+            }
+        }
         JavaSymbolSolver symbolSolver = new JavaSymbolSolver(combinedTypeSolver);
         return symbolSolver;
     }
