@@ -19,6 +19,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.maven.shared.dependency.graph.DependencyNode;
 import org.jetbrains.idea.maven.model.MavenArtifact;
 import org.jetbrains.idea.maven.project.MavenProject;
+import zju.cst.aces.Windows.WindowConfig;
 import zju.cst.aces.config.Config;
 
 import java.io.File;
@@ -48,12 +49,12 @@ public class ProjectParser {
         parser.getParserConfiguration().setSymbolResolver(symbolSolver);
     }
 
-    public ProjectParser(Config config,Module module) {
+    public ProjectParser(Config config, Module module) {
         this.srcFolderPath = Paths.get(config.project.getBasePath(), "src", "main", "java");
         this.config = config;
         this.outputPath = config.getParseOutput();
 //        JavaSymbolSolver symbolSolver = getSymbolSolver(config.mavenProject);
-        JavaSymbolSolver symbolSolver=getSymbolSolver(config.project,module);
+        JavaSymbolSolver symbolSolver = getSymbolSolver(config.project, module);
         parser.getParserConfiguration().setSymbolResolver(symbolSolver);
     }
 
@@ -61,7 +62,32 @@ public class ProjectParser {
      * Parse the project.
      */
     public void parse() {
-        List<String> classPaths = new ArrayList<>();
+        Project project = config.project;
+        Module[] modules = ModuleManager.getInstance(project).getModules();
+        for (Module module : modules) {
+            List<String> classPaths = new ArrayList<>();
+            Path srcPath = Paths.get(new File(module.getModuleFilePath()).getParent(), "src", "main", "java");
+            System.out.println("srcPath = " + srcPath);
+            scanSourceDirectory(srcPath.toFile(), classPaths);
+            /*if (classPaths.isEmpty()) {
+                throw new RuntimeException("No java file found in " + srcPath);
+            }*/
+            for (String classPath : classPaths) {
+                try {
+                    addClassMap(classPath);
+                    String packagePath = classPath.substring(srcPath.toString().length() + 1);
+                    //现在暂时用的是windowconfig的，后续看看如何处理
+                    Path output = Paths.get(new File(module.getModuleFilePath()).getParent(), WindowConfig.tmpOutput,packagePath).getParent();
+                    ClassParser classParser = new ClassParser(parser, output);
+                    classParser.extractClass(classPath);
+                } catch (Exception e) {
+                    throw new RuntimeException("In ProjectParser.parse: " + e);
+                }
+            }
+            exportClassMap();
+        }
+
+        /*List<String> classPaths = new ArrayList<>();
         scanSourceDirectory(srcFolderPath.toFile(), classPaths);
         if (classPaths.isEmpty()) {
             throw new RuntimeException("No java file found in " + srcFolderPath);
@@ -77,7 +103,7 @@ public class ProjectParser {
                 throw new RuntimeException("In ProjectParser.parse: " + e);
             }
         }
-        exportClassMap();
+        exportClassMap();*/
     }
 
     public void addClassMap(String classPath) {
@@ -141,7 +167,7 @@ public class ProjectParser {
         try {
             for (MavenArtifact dependency : dependencies) {
                 String src = dependency.getPath();
-                if (new File(src).exists()&&"jar".equals(dependency.getType())) {
+                if (new File(src).exists() && "jar".equals(dependency.getType())) {
                     combinedTypeSolver.add(new JarTypeSolver(new File(src)));
                 }
             }
@@ -153,13 +179,13 @@ public class ProjectParser {
     }
 
     private JavaSymbolSolver getSymbolSolver(Project project, Module currentModule) {
-        System.out.println("now projectParser_ClassPaths------------------------");
         CombinedTypeSolver combinedTypeSolver = new CombinedTypeSolver();
         combinedTypeSolver.add(new ReflectionTypeSolver());
         ArrayList<String> classPaths = new ArrayList<>();
         //针对所有项目类型
         Module[] modules = ModuleManager.getInstance(project).getModules();
-            ModuleRootManager rootManager = ModuleRootManager.getInstance(currentModule);
+        for (Module module : modules) {
+            ModuleRootManager rootManager = ModuleRootManager.getInstance(module);
             OrderEnumerator enumerator = rootManager.orderEntries();
             enumerator.recursively().forEachLibrary(library -> {
                 VirtualFile[] files = library.getFiles(OrderRootType.CLASSES);
@@ -171,9 +197,38 @@ public class ProjectParser {
                 return true; // 继续遍历其他库
             });
 
+            if (module != null) {
+                // 获取编译模块扩展
+                CompilerModuleExtension extension = CompilerModuleExtension.getInstance(module);
+                // 获取输出目录
+                VirtualFile outputDirectory = extension.getCompilerOutputPath();
+                if (outputDirectory != null) {
+                    combinedTypeSolver.add(new JavaParserTypeSolver(outputDirectory.getPath()));
+                }
+            }
+        }
         for (String classPath : classPaths) {
             try {
-                System.out.println(classPath);
+                combinedTypeSolver.add(new JarTypeSolver(new File(classPath)));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        /*ModuleRootManager rootManager = ModuleRootManager.getInstance(currentModule);
+        OrderEnumerator enumerator = rootManager.orderEntries();
+        enumerator.recursively().forEachLibrary(library -> {
+            VirtualFile[] files = library.getFiles(OrderRootType.CLASSES);
+            for (VirtualFile file : files) {
+                // 获取 JAR 包的路径
+                String jarPath = file.getPresentableUrl();
+                classPaths.add(jarPath);
+            }
+            return true; // 继续遍历其他库
+        });
+
+        for (String classPath : classPaths) {
+            try {
                 combinedTypeSolver.add(new JarTypeSolver(new File(classPath)));
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -187,7 +242,7 @@ public class ProjectParser {
             if (outputDirectory != null) {
                 combinedTypeSolver.add(new JavaParserTypeSolver(outputDirectory.getPath()));
             }
-        }
+        }*/
         JavaSymbolSolver symbolSolver = new JavaSymbolSolver(combinedTypeSolver);
         return symbolSolver;
     }
