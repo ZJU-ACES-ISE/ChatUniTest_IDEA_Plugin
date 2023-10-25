@@ -16,11 +16,12 @@ in Marketplace or visit plugin page [Chatunitest:IntelliJ IDEA Plugin](https://p
 to know more about our plugin.
 
 ### Plugin Configuration
-You can configure the default `Generation Configuration` for unit test generation
-in the toolwindow of the plugin: `configSettingWindow`.
+You can configure `ChatUniTest Configuration` for unit test generation
+in the config panel, which can be found in IntelliJ idea panel `Tools-> ChatUniTest-> Configuration`
 
 ### Unit test generation
 #### 1. Add the following dependency to `pom.xml` in your target project. 
+Maven project
 ```xml
 <dependency>
     <groupId>io.github.ZJU-ACES-ISE</groupId>
@@ -28,6 +29,12 @@ in the toolwindow of the plugin: `configSettingWindow`.
     <version>1.0.0</version>
     <type>pom</type>
 </dependency>
+``` 
+Gradle project
+```kts
+dependencies {
+    implementation 'io.github.ZJU-ACES-ISE:chatunitest-starter:1.0.0'
+}
 ```
 
 #### 2.ChatUniTest can generate unit tests in a variety of ways, depending on your needs:generate unit tests for your **Maven project**, **Java class**, and **Java method**.
