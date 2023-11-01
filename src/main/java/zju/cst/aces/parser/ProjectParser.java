@@ -77,7 +77,7 @@ public class ProjectParser {
                     addClassMap(classPath);
                     String packagePath = classPath.substring(srcPath.toString().length() + 1);
                     //现在暂时用的是windowconfig的，后续看看如何处理
-                    Path output = Paths.get(new File(module.getModuleFilePath()).getParent(), WindowConfig.tmpOutput,packagePath).getParent();
+                    Path output = Paths.get(new File(module.getModuleFilePath()).getParent(), WindowConfig.tmpOutput,"class-info",packagePath).getParent();
                     ClassParser classParser = new ClassParser(parser, output);
                     classParser.extractClass(classPath);
                 } catch (Exception e) {

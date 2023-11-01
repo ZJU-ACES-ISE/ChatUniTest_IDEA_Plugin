@@ -37,8 +37,8 @@ public class Config {
     public int maxThreads;
     public int classThreads;
     public int methodThreads;
-    public int testNumber;
-    public int maxRounds;
+    public int testNumber;//repairRounds
+    public int maxRounds;//testRounds
     public int maxPromptTokens;
     public int minErrorTokens;
     public String model;

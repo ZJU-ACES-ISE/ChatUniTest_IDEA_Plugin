@@ -70,7 +70,13 @@ public class MethodRunner extends ClassRunner {
             }
             executor.shutdown();
         } else {
-            if (WindowConfig.regenerateReminder == false) {
+            //暂时禁用repair相关控制，都会repair
+            for (int num = 1; num <= config.getTestNumber(); num++) {
+                if (startRounds(num)) {
+                    break;
+                }
+            }
+            /*if (WindowConfig.regenerateReminder == false) {
                 for (int num = 1; num <= config.getTestNumber(); num++) {
                     if (num == 1) {
                         if (startRounds(num)) {
@@ -102,11 +108,12 @@ public class MethodRunner extends ClassRunner {
                         break;
                     }
                 }
-            }
+            }*/
 
         }
     }
 
+    //todo:修复compileError时两个面板同时出现的bug
     public boolean startRounds(final int num) throws IOException {
         PromptInfo promptInfo = null;
         String testName = className + separator + methodInfo.methodName + separator
@@ -127,9 +134,9 @@ public class MethodRunner extends ClassRunner {
                 if(WindowConfig.notifyRepair==0){
                     LoggerUtil.info(config.project, ("[Repairing] Fixing test for method  " + methodInfo.methodName + "  ,round " + rounds ));
                 }
-                else if(WindowConfig.notifyRepair==1&&rounds==2){
+                /*else if(WindowConfig.notifyRepair==1&&rounds==2){
                     LoggerUtil.info(config.project, ("[Repairing] Fixing test for method  "+ methodInfo.methodName));
-                }
+                }*/
 //                LoggerUtil.info(config.project, ("[Repairing] Fixing test for method  " + methodInfo.methodName + "  round " + rounds ));
             }
             List<Message> prompt = generateMessages(promptInfo);
@@ -154,7 +161,8 @@ public class MethodRunner extends ClassRunner {
             boolean compileResult = compiler.compileTest(testName,
                     errorOutputPath.resolve(testName + "_CompilationError_" + rounds + ".txt"), promptInfo, fullClassName);
             if (!compileResult) {
-                if(WindowConfig.notifyRepair==0){
+                //todo:修复repairround相关bug
+                /*if(WindowConfig.notifyRepair==0){
                     LoggerUtil.info(config.project, "Test for method  " + methodInfo.methodName + "  compilation failed");
                 }
                 if (config.getRepair_record() == 0) {
@@ -163,8 +171,8 @@ public class MethodRunner extends ClassRunner {
                     }
                 } else if (config.getRepair_record() == 2) {
                     return true;
-                }
-                return false;
+                }*/
+                continue;
             }
             if (config.isNoExecution()) {
                 exportTest(code, savePath);

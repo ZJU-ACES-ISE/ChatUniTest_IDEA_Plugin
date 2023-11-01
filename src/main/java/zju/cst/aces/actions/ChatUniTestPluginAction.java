@@ -5,6 +5,7 @@ import com.intellij.openapi.compiler.CompileContext;
 import com.intellij.openapi.compiler.CompileStatusNotification;
 import com.intellij.openapi.compiler.CompilerManager;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.roots.CompilerModuleExtension;
 import com.intellij.openapi.util.Computable;
@@ -209,24 +210,28 @@ public class ChatUniTestPluginAction extends AnAction {
                     );
                     compileDialogResult.complete(result);
                 });
+
                 try {
                     int result=compileDialogResult.get();
                     if ( result== 1) {
                         CompletableFuture<Boolean> compileFuture = new CompletableFuture<>();
                         application.invokeLater(() -> {
-                            compilerManager.compile(module, new CompileStatusNotification() {
-                                @Override
-                                public void finished(boolean aborted, int errors, int warnings, @NotNull CompileContext compileContext) {
-                                    if (errors > 0) {
-                                        application.invokeLater(() -> {
-                                            Messages.showMessageDialog("Compile project failed", "Error", Messages.getErrorIcon());
-                                        });
-                                        compileFuture.complete(false);
-                                    } else {
-                                        compileFuture.complete(true);
+                            Module[] modules = ModuleManager.getInstance(project).getModules();
+                            for (Module module1 : modules) {
+                                compilerManager.compile(module1, new CompileStatusNotification() {
+                                    @Override
+                                    public void finished(boolean aborted, int errors, int warnings, @NotNull CompileContext compileContext) {
+                                        if (errors > 0) {
+                                            application.invokeLater(() -> {
+                                                Messages.showMessageDialog("Compile project failed", "Error", Messages.getErrorIcon());
+                                            });
+                                            compileFuture.complete(false);
+                                        } else {
+                                            compileFuture.complete(true);
+                                        }
                                     }
-                                }
-                            });
+                                });
+                            }
                         });
                         try {
                             if (!compileFuture.get()) {
@@ -282,6 +287,7 @@ public class ChatUniTestPluginAction extends AnAction {
                     } catch (InterruptedException | ExecutionException e) {
                         application.invokeLater(() -> {
                             LoggerUtil.info(project, "[ChatUniTest] Project parse failed");
+                            e.printStackTrace();
                         });
                         throw new RuntimeException(e);
                     }
