@@ -8,12 +8,14 @@ import java.util.List;
 
 public class UpdateGitignoreUtil {
     static String[] rule_array = {
-            "chatunitest/",
+            /*"chatunitest/",
             "tmp/",
             "src/test/java/*_*_*_*_*.java",
-            "src/main/java/*_*_*_*_*.java"
+            "src/main/java/*_*_*_*_*.java"*/
+            "*",
+            "!.gitignore"
     };
-
+//todo:修改添加gitignore以使得适配多模块的项目
     public static void addToFile(File gitignoreFile) {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(gitignoreFile));

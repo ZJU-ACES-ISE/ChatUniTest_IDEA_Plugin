@@ -154,7 +154,8 @@ public class TestCompiler {
         List<String> errorList = new ArrayList<>();
         Project project = config.getProject();
         //将位置移动到src/test/java,使得能够使用scope='test'的依赖
-        VirtualFile tempDir = project.getBaseDir().findFileByRelativePath("/src/test/java");
+//        VirtualFile tempDir = project.getBaseDir().findFileByRelativePath("/src/test/java");
+        VirtualFile tempDir = LocalFileSystem.getInstance().findFileByIoFile(Paths.get(config.basePath, "src", "test", "java").toFile());
         CompletableFuture<Boolean> compileFuture = new CompletableFuture<>();
         // Create a temporary Java file
         ApplicationManager.getApplication().invokeLater(() -> {

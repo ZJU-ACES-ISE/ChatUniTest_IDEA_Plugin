@@ -61,17 +61,17 @@ public class ProjectParser {
     /**
      * Parse the project.
      */
-    public void parse() {
-        Project project = config.project;
+    public void parse(Module currentModule) {
+        /*Project project = config.project;
         Module[] modules = ModuleManager.getInstance(project).getModules();
         for (Module module : modules) {
             List<String> classPaths = new ArrayList<>();
             Path srcPath = Paths.get(new File(module.getModuleFilePath()).getParent(), "src", "main", "java");
             System.out.println("srcPath = " + srcPath);
             scanSourceDirectory(srcPath.toFile(), classPaths);
-            /*if (classPaths.isEmpty()) {
+            *//*if (classPaths.isEmpty()) {
                 throw new RuntimeException("No java file found in " + srcPath);
-            }*/
+            }*//*
             for (String classPath : classPaths) {
                 try {
                     addClassMap(classPath);
@@ -85,17 +85,23 @@ public class ProjectParser {
                 }
             }
             exportClassMap();
-        }
+        }*/
 
-        /*List<String> classPaths = new ArrayList<>();
-        scanSourceDirectory(srcFolderPath.toFile(), classPaths);
+        //将一个模块看作一个项目
+        List<String> classPaths = new ArrayList<>();
+        System.out.println(new File(currentModule.getModuleFilePath()).getParent().toString());
+        Path srcPath = Paths.get(new File(currentModule.getModuleFilePath()).getParent().toString(), "src", "main", "java");
+        scanSourceDirectory(srcPath.toFile(), classPaths);
         if (classPaths.isEmpty()) {
             throw new RuntimeException("No java file found in " + srcFolderPath);
         }
+        System.out.println(classPaths);
         for (String classPath : classPaths) {
             try {
                 addClassMap(classPath);
-                String packagePath = classPath.substring(srcFolderPath.toString().length() + 1);
+//                String packagePath = classPath.substring(srcFolderPath.toString().length() + 1);
+                String packagePath=classPath.substring(srcPath.toString().length()+1);
+                System.out.println("packagePath = " + packagePath);
                 Path output = outputPath.resolve(packagePath).getParent();
                 ClassParser classParser = new ClassParser(parser, output);
                 classParser.extractClass(classPath);
@@ -103,7 +109,7 @@ public class ProjectParser {
                 throw new RuntimeException("In ProjectParser.parse: " + e);
             }
         }
-        exportClassMap();*/
+        exportClassMap();
     }
 
     public void addClassMap(String classPath) {
