@@ -1,0 +1,17 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="GradlePackageUpdate" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+      <option name="excludeList">
+        <list>
+          <option value="org.ow2.asm:asm" />
+          <option value="org.jsoup:jsoup" />
+          <option value="org.freemarker:freemarker" />
+          <option value="org.apache.maven.shared:maven-invoker" />
+          <option value="com.knuddels:jtokkit" />
+          <option value="com.fasterxml.jackson.core:jackson-databind" />
+        </list>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>

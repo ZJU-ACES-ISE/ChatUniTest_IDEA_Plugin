@@ -1,0 +1,111 @@
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+    <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
+    <id>zju.cst.zju.cst.aces.ChatUniTest</id>
+
+    <!-- Public plugin name should be written in Title Case.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
+    <name>ChatUniTest</name>
+
+    <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
+    <vendor email="Huzehao@zju.edu.cn" url="https://github.com/NCCurry30">Huhuanghuang</vendor>
+
+    <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
+         Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
+    <description><![CDATA[
+    <p>Many people have tried using ChatGPT to help them with various programming tasks and have achieved good results. However, there are some issues with using ChatGPT directly. Firstly, the generated code often fails to execute correctly, leading to the famous saying "five minutes to code, two hours to debug". Secondly, it is inconvenient to integrate with existing projects as it requires manual interaction with ChatGPT and switching between different platforms. To address these problems, we have proposed the "Generate-Validate-Repair" framework and implemented a prototype. Additionally, to make it easier for everyone to use, we have developed some plugins that can be seamlessly integrated into existing development workflows.</p>
+    <Strong>Getting Started</Strong><br>
+    <span>1. You should use the plugin for your maven project.</span><br>
+<span>2. Ensure that the Java compilation version of your project is at least 11.<br>
+<span>3. Ensure add the dependency entry to the pom.xml file</span><br>
+<code>&lt;dependencies&gt;<br>
+    &nbsp;&nbsp;&lt;dependency&gt;<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&lt;groupId&gt;io.github.ZJU-ACES-ISE&lt;/groupId&gt;<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&lt;artifactId&gt;chatunitest-starter&lt;/artifactId&gt;<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&lt;version&gt;1.0.0&lt;/version&gt;<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&lt;type&gt;pom&lt;/type&gt;<br>
+    &nbsp;&nbsp;&lt;/dependency&gt;<br>
+&lt;/dependencies&gt;</code><br>
+<p>4. Ensure configure your apikeys and confirm the connection: You can configure ChatUnitTest in the IDEA (IntelliJ IDEA) panel by going to <strong>Tools -> ChatUnitTest Setting</strong>, or you can use the shortcut <strong>Ctrl + Shift + P</strong>.</p>
+  ]]></description>
+
+    <!-- Product and plugin compatibility requirements.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.java</depends>
+    <depends>org.jetbrains.idea.maven</depends>
+
+    <!-- Extension points defined by the plugin.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
+    <extensions defaultExtensionNs="com.intellij">
+        <notificationGroup id="Custom Notification Group"
+                           displayType="BALLOON"
+                           key="notification.group.name"/>
+    </extensions>
+    <application-components>
+        <component>
+            <implementation-class>zju.cst.aces.IDEA.config.ConfigPersistence</implementation-class>
+        </component>
+    </application-components>
+    <actions>
+    <!--<action id="ChatUniTestPlugin_id" class="zju.cst.aces.actions.ChatUniTestPluginAction" text="ChatUniTest generate tests"
+            description="Generate unit test cases for project,java class or method" icon="/icons/pluginIcon.svg" >
+        &lt;!&ndash; 将动作添加到 EditorPopupMenu 和 ProjectViewPopupMenu 这两个 group 中 &ndash;&gt;
+        <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
+        <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+    </action>-->
+    <!--  <action class="zju.cst.zju.cst.aces.actions.PromptDefineAction" text="prompt definition" id="prompt_definition_id">
+          <add-to-group group-id="ProjectViewPopupMenu" anchor="first" />
+      </action>-->
+    <!--<group
+            id="org.intellij.sdk.action.GroupedActions"
+            text="ChatUniTest"
+            popup="true"
+            icon="/icons/pluginIcon.svg">
+        <add-to-group
+                group-id="ToolsMenu"
+                anchor="after"
+                relative-to-action="org.intellij.sdk.action.PopupDialogAction"/>
+        <action
+                class="zju.cst.aces.actions.ConfigSettingAction"
+                id="zju.cst.zju.cst.aces.actions.ConfigSettingAction_global"
+                text="Global Configuration"
+                description="ChatUniTest Configuration">
+        </action>
+        <action
+                class="zju.cst.aces.actions.ProjectConfigSettingAction"
+                id="zju.cst.zju.cst.aces.actions.ConfigSettingAction_project"
+                text="Project Configuration"
+                description="ChatUniTest Configuration(project)">
+        </action>
+    </group>-->
+        <action id="ChatunitestPluginAction_id" class="zju.cst.aces.actions.ChatunitestPluginAction"
+                text="ChatUniTest generate unit test" description="activate plugin" icon="/icons/pluginIcon.svg">
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+        </action>
+        <group
+                id="org.intellij.sdk.action.GroupedActions"
+                text="ChatUniTest"
+                popup="true"
+                icon="/icons/pluginIcon.svg">
+            <add-to-group
+                    group-id="ToolsMenu"
+                    anchor="after"
+                    relative-to-action="org.intellij.sdk.action.PopupDialogAction"/>
+            <action
+                    class="zju.cst.aces.actions.ConfigSettingAction"
+                    id="zju.cst.aces.actions.ConfigSettingAction_global"
+                    text="Global Configuration"
+                    description="ChatUniTest Configuration">
+            </action>
+            <!--<action
+                    class="zju.cst.aces.actions.ProjectConfigSettingAction"
+                    id="zju.cst.aces.actions.ConfigSettingAction_project"
+                    text="Project Configuration"
+                    description="ChatUniTest Configuration(project)">
+            </action>-->
+        </group>
+    </actions>
+</idea-plugin>
