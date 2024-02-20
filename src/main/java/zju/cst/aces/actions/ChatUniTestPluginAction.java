@@ -173,6 +173,9 @@ public class ChatUniTestPluginAction extends AnAction {
             Module currentModule=LangDataKeys.MODULE.getData(event.getDataContext());
             //多模块也适用，输出目录在当前模块的目录下
             basePath=new File(currentModule.getModuleFilePath()).getParent().toString();
+            if(basePath.contains(".idea")){
+                basePath= String.valueOf(Paths.get(currentModule.getModuleFilePath()).getParent().getParent());
+            }
             init(project, basePath, mavenProject,currentModule);
            /* //对比一下之前和新使用的listclasspath的区别
             System.out.println("previous----------------------");

@@ -91,6 +91,9 @@ public class ProjectParser {
         List<String> classPaths = new ArrayList<>();
         System.out.println(new File(currentModule.getModuleFilePath()).getParent().toString());
         Path srcPath = Paths.get(new File(currentModule.getModuleFilePath()).getParent().toString(), "src", "main", "java");
+        if(srcPath.toString().contains(".idea")){
+            srcPath=Paths.get(Paths.get(currentModule.getModuleFilePath()).getParent().getParent().toString(), "src", "main", "java");
+        }
         scanSourceDirectory(srcPath.toFile(), classPaths);
         if (classPaths.isEmpty()) {
             throw new RuntimeException("No java file found in " + srcFolderPath);
