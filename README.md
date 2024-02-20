@@ -8,7 +8,7 @@ platforms. To address these problems, we have proposed the "Generate-Validate-Re
 prototype. Additionally, to make it easier for everyone to use, we have developed an IntelliJ IDEA plugin that can be 
 seamlessly integrated into existing development workflows.
 
-The plugin is compatible with **IntelliJ IDEA 2022.1-2023.1** and can be built from sources.
+The plugin is compatible with **IntelliJ IDEA 2022.1-2023.3** and can be built from sources.
 
 ## Use ChatUniTest
 We have released the Chatunitest plugin in the IntelliJ IDEA plugin Marketplace,you can search and install ChatUniTest 
@@ -26,21 +26,22 @@ Maven project
 <dependency>
     <groupId>io.github.ZJU-ACES-ISE</groupId>
     <artifactId>chatunitest-starter</artifactId>
-    <version>1.0.0</version>
+    <version>1.4.0</version>
     <type>pom</type>
 </dependency>
 ``` 
 Gradle project
 ```kts
 dependencies {
-    implementation 'io.github.ZJU-ACES-ISE:chatunitest-starter:1.0.0'
+    implementation 'io.github.ZJU-ACES-ISE:chatunitest-starter:1.4.0'
 }
 ```
 
 #### 2.ChatUniTest can generate unit tests in a variety of ways, depending on your needs:generate unit tests for your **Maven project**, **Java class**, and **Java method**.
 1. You can place your mouse over the project root directory and click the right mouse button ,click `ChatUniTest generate tests`. The plugin will generate unit tests for your **entire project**
-2. You can place your mouse over the `.java` file in `/src/main/java` directory and click the right mouse button ,click `ChatUniTest generate tests`. The plugin will generate unit tests for your **selected Java class**
-3. You can place your mouse over the `method` in your `Java class` and click the right mouse button ,click `ChatUniTest generate tests`. The plugin will generate unit tests for your **selected Java method**
+2. You can place your mouse over the module and click the right mouse button ,click `ChatUniTest generate tests`. The plugin will generate unit tests for the selected **module**
+3. You can place your mouse over the `.java` file in `/src/main/java` directory and click the right mouse button ,click `ChatUniTest generate tests`. The plugin will generate unit tests for your **selected Java class** (Excluded getter, setter, constructor, and private methods)
+4. You can place your mouse over the `method` in your `Java class` and click the right mouse button ,click `ChatUniTest generate tests`. The plugin will generate unit tests for your **selected Java method**
 
 ## Source Code
 ### Installation
