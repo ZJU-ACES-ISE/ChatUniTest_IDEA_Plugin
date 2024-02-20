@@ -12,7 +12,6 @@ import com.intellij.openapi.project.Project;
 import org.junit.platform.launcher.listeners.TestExecutionSummary;
 import zju.cst.aces.actions.ChatunitestPluginAction;
 import zju.cst.aces.api.Validator;
-import zju.cst.aces.api.config.Config;
 import zju.cst.aces.dto.PromptInfo;
 import zju.cst.aces.dto.TestMessage;
 import zju.cst.aces.util.TestCompiler;
@@ -109,7 +108,11 @@ public class ValidatorImpl implements Validator {
         ApplicationManager.getApplication().invokeLater(() -> {
             ApplicationManager.getApplication().runWriteAction(() -> {
                 try {
-                    tempJavaFile = tempDir.createChildData(null, className + ".java");
+                    if(tempDir==null){
+                        Paths.get(String.valueOf(project_impl.getBasedir()), "src", "test", "java").toFile().mkdir();
+                    }
+                    tempJavaFile = LocalFileSystem.getInstance().findFileByIoFile(Paths.get(String.valueOf(project_impl.getBasedir()),
+                            "src", "test", "java").toFile()).createChildData(null, className + ".java");
                     tempJavaFile.setBinaryContent(code.getBytes());
                     if (!outputPath.toAbsolutePath().getParent().toFile().exists()) {
                         outputPath.toAbsolutePath().getParent().toFile().mkdirs();
@@ -170,4 +173,5 @@ public class ValidatorImpl implements Validator {
         // 使用thenAccept来异步处理结果
         return compileFuture.get();
     }
+
 }

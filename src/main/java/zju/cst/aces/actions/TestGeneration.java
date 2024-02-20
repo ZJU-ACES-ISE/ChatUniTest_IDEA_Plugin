@@ -75,8 +75,8 @@ public class TestGeneration {
                 .presencePenalty(WindowConfig.presencePenalty)
                 .proxy((WindowConfig.hostname.equals("") || WindowConfig.port.equals("")) ? "null:-1" : String.format("%s:%s", WindowConfig.hostname, WindowConfig.port))
                 .build();
+        ProjectImpl project1 = new ProjectImpl(project, module);
         config.setValidator(new ValidatorImpl(config.testOutput,config.compileOutputPath,config.project.getBasedir().toPath().resolve("target"),config.classPaths,config.project));
-        System.out.println("config = " + config.toString());
     }
     public static List<String> listClassPaths(MavenProject mavenProject) {
         ArrayList<String> classPaths = new ArrayList<>();

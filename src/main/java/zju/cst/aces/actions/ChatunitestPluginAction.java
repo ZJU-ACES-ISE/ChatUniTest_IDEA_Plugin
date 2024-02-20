@@ -53,8 +53,8 @@ public class ChatunitestPluginAction extends AnAction {
         application.executeOnPooledThread(() -> {
             //todo:检查是否是maven项目
             //询问用户需要使用全局的配置还是项目级别的配置
-            CompletableFuture<Integer> configFuture = new CompletableFuture<>();
-            application.invokeLater(() -> {
+            /*CompletableFuture<Integer> configFuture = new CompletableFuture<>();
+           application.invokeLater(() -> {
                 int result = Messages.showDialog(
                         project,
                         "Please choose a config mode (Global Configuration or Project-Level Configuration)",
@@ -64,8 +64,8 @@ public class ChatunitestPluginAction extends AnAction {
                         Messages.getWarningIcon()
                 );
                 configFuture.complete(result);
-            });
-            try {
+            });*/
+            /*try {
                 int configMode = configFuture.get();
                 if (configMode == 1) {
                     Path persistenceXmlPath = Paths.get(project.getBasePath(), ".idea", project.getName() + ".xml");
@@ -98,6 +98,15 @@ public class ChatunitestPluginAction extends AnAction {
                 throw new RuntimeException(e);
             } catch (ExecutionException e) {
                 throw new RuntimeException(e);
+            }*/
+            //使用global setting
+            loadPersistentConfig(0, null);
+            if (WindowConfig.apiKeys == null || WindowConfig.apiKeys[0].equals("")) {
+                application.invokeLater(() -> {
+                    SettingPanel settingPanel = new SettingPanel();
+                    settingPanel.show();
+                });
+                return;
             }
             //设置gitignore，防止中间文件产生过程中经常提示用户添加到git中（用户也可以在idea中自行设置）
             application.invokeLater(() -> {
@@ -347,7 +356,7 @@ public class ChatunitestPluginAction extends AnAction {
         Project project = event.getProject();
         //是否是对应路径的java文件
         boolean isJavaFile = file != null && FileTypeRegistry.getInstance().isFileOfType(file, com.intellij.openapi.fileTypes.StdFileTypes.JAVA);
-        boolean isInJavaSource = project != null && file != null && file.getPath().contains("/src/main/java");
+        boolean isInJavaSource = project != null && file != null && file.getPath().contains("/src/main");
         // 检查所选项目目录是否满足条件
         boolean isRootProject = project != null && file != null && project.getBasePath().equals(file.getPath());
         boolean isSubModule = isSubModule(file, project);
@@ -361,8 +370,8 @@ public class ChatunitestPluginAction extends AnAction {
         // 判断是否为方法
         // 从 PsiElement 向上遍历找到所属的 PsiJavaFile 文件对象
         PsiJavaFile javaFile = PsiTreeUtil.getParentOfType(psiElement, PsiJavaFile.class);
-        // 判断该文件是否位于 src/main/java 目录下
-        if (javaFile != null && javaFile.getVirtualFile().getPath().contains("/src/main/java")) {
+        // 判断该文件是否位于 src/main 目录下
+        if (javaFile != null && javaFile.getVirtualFile().getPath().contains("/src/main")) {
             if (psiElement instanceof PsiMethod) {
                 // 启用按钮并设置可见
                 event.getPresentation().setEnabledAndVisible(true);

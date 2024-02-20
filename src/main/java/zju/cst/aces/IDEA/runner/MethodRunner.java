@@ -259,12 +259,12 @@ public class MethodRunner extends ClassRunner {
             promptInfo.setErrorMsg(testMessage);
             exportError(code, errors, executionErrorPath);
             testProcessor.removeCorrectTest(promptInfo, summary);
+            System.out.println("executionErrors:"+errors.stream().collect(Collectors.joining("\n")));
             config.getLog().info("Test for method '" + promptInfo.getMethodInfo().getMethodName() + "' execution failed round " + rounds);
             return false;
         }
 //            summary.printTo(new PrintWriter(System.out));
         exportTest(code, savePath);
-        System.out.println("promptInfo.getMethodInfo().getMethodName() = " + promptInfo.getMethodInfo().getMethodName());
         config.getLog().info("Test for method  '" + promptInfo.getMethodInfo().getMethodName().replace(">","") + "' compile and execute successfully round " + rounds);
         return true;
     }
@@ -276,6 +276,7 @@ public class MethodRunner extends ClassRunner {
             writer.write(code);
             writer.write("\n--------------------------------------------\n");
             writer.write(errors.stream().collect(Collectors.joining("\n")));
+            //打印executionError
             writer.close();
         } catch (Exception e) {
             throw new RuntimeException("In TestCompiler.exportError: " + e);

@@ -5,7 +5,7 @@ public class WindowDefaultConfig {
     public static String apiKeys="";
     public static boolean enableMultithreading=false;
     public static String tmpOutput="/tmp/chatunitest-info";
-    public static String testOutput="chatunitest-tests";
+    public static String testOutput="/chatunitest-tests";
     public static boolean stopWhenSuccess=true;
     public static boolean noExecution=false;
     public static int maxThreads=0;

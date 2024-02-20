@@ -38,8 +38,8 @@ public class Task {
             log.info("[ChatUniTest] Skip pom-packaging ...");
             return;
         }
-        ProjectParser parser = new ProjectParser(config);
-        parser.parse();
+        /*ProjectParser parser = new ProjectParser(config);
+        parser.parse();*/
         log.info("[ChatUniTest] Generating tests for class:' " + className
                 + "' method: '" + methodName + "'");
 
@@ -85,6 +85,7 @@ public class Task {
 
         } catch (IOException e) {
             log.warn("Method not found: '" + methodName + "' in '" + className + "' " + config.getProject().getArtifactId());
+            e.printStackTrace();
             return;
         }
 
@@ -102,8 +103,8 @@ public class Task {
             log.info("[ChatUniTest] Skip pom-packaging ...");
             return;
         }
-        ProjectParser parser = new ProjectParser(config);
-        parser.parse();
+        /*ProjectParser parser = new ProjectParser(config);
+        parser.parse();*/
         log.info("[ChatUniTest] Generating tests for class '" + className + "'");
         try {
             new ClassRunner(config, getFullClassName(config, className)).start();
@@ -125,8 +126,8 @@ public class Task {
             log.info("[ChatUniTest] Skip pom-packaging ...");
             return;
         }
-        ProjectParser parser = new ProjectParser(config);
-        parser.parse();
+        /*ProjectParser parser = new ProjectParser(config);
+        parser.parse();*/
         List<String> classPaths = ProjectParser.scanSourceDirectory(project);
         if (config.isEnableMultithreading() == true) {
             projectJob(classPaths);
@@ -144,6 +145,7 @@ public class Task {
                     runner.start();
                 } catch (IOException e) {
                     log.error("[ChatUniTest] Generate tests for class '" + className + "' failed: " + e);
+                    e.printStackTrace();
                 }
             }
         }

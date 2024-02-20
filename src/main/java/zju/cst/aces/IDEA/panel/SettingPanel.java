@@ -71,6 +71,8 @@ public class SettingPanel extends JFrame {
         repairReminder.setSelected(remind_repair_per!=null?remind_repair_per:WindowDefaultConfig.repairReminder);
         notifyRepair.setSelectedIndex(notifyRepair_per!=null?notifyRepair_per:WindowDefaultConfig.notifyRepair);
         specification.setSelected(test_specification!=null?test_specification:true);
+        testOutput.setEditable(false);
+        tmpOutput.setEditable(false);
         //replace name
         confirm();
     }

@@ -28,7 +28,7 @@ tasks {
 
     patchPluginXml {
         sinceBuild.set("221")
-        untilBuild.set("231.*")
+        untilBuild.set("233.*")
     }
 
     signPlugin {
@@ -78,7 +78,7 @@ dependencies {
     implementation ("org.jsoup:jsoup:1.14.3")
     implementation ("org.freemarker:freemarker:2.3.30")
     implementation ("org.ow2.asm:asm:9.2")
-    implementation("io.github.ZJU-ACES-ISE:chatunitest-core:1.0.2"){
+    implementation("io.github.ZJU-ACES-ISE:chatunitest-core:1.1.0"){
         exclude("org.junit.platform","junit-platform-launcher")
         exclude("org.junit.jupiter","junit-jupiter-engine")
         exclude("org.junit.vintage","junit-vintage-engine")

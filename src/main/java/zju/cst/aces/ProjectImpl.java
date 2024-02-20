@@ -28,21 +28,18 @@ public class ProjectImpl implements Project {
         MavenProjectsManager mavenProjectsManager = MavenProjectsManager.getInstance(project);
         // 获取当前模块对应的 Maven 项目
         List<MavenProject> mavenProjects = mavenProjectsManager.getProjects();
+        String moduleFilePath = module.getModuleFilePath();
         //获取当前module对应的project，并赋值
         for (MavenProject mp : mavenProjects) {
-            //判断是否是父模块
-            /*
-            父模块与子模块路径有差异
-            父模块路径中多一个".idea"
-             */
             String modulePath = Paths.get(module.getModuleFilePath()).getParent().toString().replace("\\", File.separator).replace("/", File.separator);
+            //判断是否是父模块
             if(modulePath.contains(".idea")){
                 modulePath=Paths.get(module.getModuleFilePath()).getParent().getParent().toString().replace("\\", File.separator).replace("/", File.separator);
             }
             String mpPath = mp.getDirectory().toString().replace("\\", File.separator).replace("/", File.separator);
             //通过遍历所有模块来获取当前模块
             if (mpPath.equals(modulePath)) {
-                this.mavenProject = mp;
+                mavenProject=mp;
                 break;
             }
         }
